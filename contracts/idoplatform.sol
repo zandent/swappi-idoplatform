@@ -24,12 +24,6 @@ contract idoplatform {
     ISwappiFactory swappiFactory;
     //swappi farm ppi control address
     address votingEscrow;
-    /// @notice veToken specs (learned from https://github.com/swappidex/swappi-farm/blob/main/contracts/VotingEscrow.sol)
-    uint256 public maxTime; // 4 years
-    struct LockedBalance {
-        uint256 amount;
-        uint256 unlockTime;
-    }
 
     /// @notice wrapped token called IDO token
     struct IDOToken {
@@ -58,17 +52,16 @@ contract idoplatform {
             address _wcfx,
             address _votingEscrow
         ) {
-            token = IERC20(token);
-            token = IERC20(_token);
-            swappiNFT = IERC721(swappiNFT);
-            swappiNFT = IERC721(_swappiNFT);
-            maxTime = 4 * 365 * 86400;
-            owner = msg.sender;
-            router = _router;
-            swappiFactory = ISwappiFactory(swappiFactory);
-            swappiFactory = ISwappiFactory(_swappiFactory);
-            wcfx = _wcfx;
-            votingEscrow = _votingEscrow;
+            token            = IERC20(token);
+            token            = IERC20(_token);
+            swappiNFT        = IERC721(swappiNFT);
+            swappiNFT        = IERC721(_swappiNFT);
+            owner            = msg.sender;
+            router           = _router;
+            swappiFactory    = ISwappiFactory(swappiFactory);
+            swappiFactory    = ISwappiFactory(_swappiFactory);
+            wcfx             = _wcfx;
+            votingEscrow     = _votingEscrow;
         }
     // Step 1: admin should approval one token's IDO
     function adminApproval(
@@ -86,17 +79,17 @@ contract idoplatform {
         require(entry.isApproved == false, "This token IDO is already approved");
         require(amt >= privateSpecs[1], "amount should not exceed private sale amount!");
         require(privateSpecs[2] >= block.timestamp && privateSpecs[2] < privateSpecs[3] && privateSpecs[3] < publicSpecs[1], "timestamp setting is wrong");
-        entry.isApproved                    = true;
+        entry.isApproved                     = true;
         entry.valid                          = false;
-        entry.projectName                   = projectName;
+        entry.projectName                    = projectName;
         entry.symbol                         = IERC20(token_addr).symbol();
         entry.decimals                       = IERC20(token_addr).decimals();
         entry.amt                            = amt;
-        entry.amtForLP                     = uint256(amt * ratioForLP) /100;
-        entry.priceForLP                   = priceForLP;
-        entry.amtOfCFXCollected       = 0;
-        entry.privateSpecs                  = privateSpecs;
-        entry.publicSpecs                   = publicSpecs;
+        entry.amtForLP                       = uint256(amt * ratioForLP) /100;
+        entry.priceForLP                     = priceForLP;
+        entry.amtOfCFXCollected              = 0;
+        entry.privateSpecs                   = privateSpecs;
+        entry.publicSpecs                    = publicSpecs;
         entry.maxAmtPerBuyer                 = maxAmtPerBuyer;
     }
     // Step 2: let the token owner transfer tokens to "this" and start its sale
