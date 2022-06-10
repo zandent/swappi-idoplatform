@@ -18,7 +18,8 @@
     "hardhat": "^2.9.9"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.6.0",
-    "@swappi-libs/swappi-core": "swappidex/swappi-core"
+    "@openzeppelin/contracts": "4.6.0",
+    "@swappi-libs/swappi-core": "swappidex/swappi-core",
+    "conflux-swap-farm": "swappidex/swappi-farm"
   }
 }
