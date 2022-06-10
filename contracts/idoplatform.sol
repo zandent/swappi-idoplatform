@@ -10,11 +10,13 @@ contract idoplatform {
       require(msg.sender == owner);
       _;
     }
- 
+
     // PPI token address
     IERC20 token; 
     //swappi nft token address
     IERC721 swappiNFT;
+    //swappi LP interface
+    address router;
     /// @notice veToken specs (learned from https://github.com/swappidex/swappi-farm/blob/main/contracts/VotingEscrow.sol)
     uint256 public maxTime; // 4 years
     struct LockedBalance {
@@ -26,11 +28,14 @@ contract idoplatform {
     struct IDOToken {
         bool is_approved;
         bool valid;
+        address token_owner;
         string project_name;
         string symbol;
         uint8 decimals;
         uint256 amt; // amount to sell
-        uint256 amt_for_lp; //amount for place LP
+        uint256 amt_for_lp; //pre_defined amount for place LP
+        uint256 price_for_lp; //pre_defined amount of cfx for place LP
+        uint256 total_amt_of_CFX_for_IDO; 
         uint256[4] private_specs; //veToken_threshold, amount, price, start time, end time
         uint256[2] public_specs; // price, end time
         mapping(address => uint256) buyers; // record the amount of token buyer buys
@@ -45,7 +50,8 @@ contract idoplatform {
     event Withdrawn(address indexed account, uint256 amount);
     constructor(
             address _token,
-            address _swappiNFT
+            address _swappiNFT,
+            address _router
         ) {
             token = IERC20(token);
             token = IERC20(_token);
@@ -53,6 +59,7 @@ contract idoplatform {
             swappiNFT = IERC721(_swappiNFT);
             maxTime = 4 * 365 * 86400;
             owner = msg.sender;
+            router = _router;
         }
     // Step 1: admin should approval one token's IDO
     function adminApproval(
@@ -62,6 +69,7 @@ contract idoplatform {
         uint8 decimals,
         uint256 amt,
         uint256 ratio_for_lp,
+        uint256 token_price_for_lp,
         uint256[4] memory private_specs,
         uint256[2] memory public_specs
         ) external onlyAdmin {
@@ -81,6 +89,8 @@ contract idoplatform {
         entry.decimals                       = decimals;
         entry.amt                            = amt;
         entry.amt_for_lp                     = uint256(amt * ratio_for_lp) /100;
+        entry.price_for_lp                   = token_price_for_lp;
+        entry.total_amt_of_CFX_for_IDO       = 0;
         entry.private_specs                  = private_specs;
         entry.public_specs                   = public_specs;
     }
@@ -93,6 +103,7 @@ contract idoplatform {
             require(entry.valid == false, "Your IDO already started");
             require(entry.private_specs[3] >= block.timestamp, "You start IDO too late! Contact admin to change schedule");
             entry.valid = true;
+            entry.token_owner = msg.sender;
             SafeERC20.safeTransferFrom(IERC20(token_addr), msg.sender, address(this), entry.amt + entry.amt_for_lp);
     }
     // step 3.1: let users stake PPI to form its veToken
@@ -157,7 +168,7 @@ contract idoplatform {
             _amount;
         user.amount = newAmount;
 
-        SafeERC20.safeTransferFrom(IERC20(token),msg.sender, address(this), _amount);
+        SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), _amount);
 
         emit AmountIncreased(_account, _amount);
     }
@@ -210,10 +221,11 @@ contract idoplatform {
         require(entry.private_specs[1] > 0, "This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.private_specs[1], "Not enough token to trade");
         require (msg.value >= amt_to_buy * entry.private_specs[2], "Not enough CFX to trade");
-        if (swappiNFT.balanceOf(msg.sender) != 0) {
+        if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.private_specs[1] = entry.private_specs[1] - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+            entry.total_amt_of_CFX_for_IDO = entry.total_amt_of_CFX_for_IDO + amt_to_buy * entry.private_specs[2];
         }else{
             //calculate current veToken
             uint256 veTokenAmt = _balanceOfAtTimestamp(msg.sender, block.timestamp);
@@ -221,6 +233,7 @@ contract idoplatform {
             entry.amt = entry.amt - amt_to_buy;
             entry.private_specs[1] = entry.private_specs[1] - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+            entry.total_amt_of_CFX_for_IDO = entry.total_amt_of_CFX_for_IDO + amt_to_buy * entry.private_specs[2];
         }
     }
     // step 3.3: public sale
@@ -234,15 +247,30 @@ contract idoplatform {
         require (msg.value >= amt_to_buy * entry.public_specs[1], "Not enough CFX to trade");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+        entry.total_amt_of_CFX_for_IDO = entry.total_amt_of_CFX_for_IDO + amt_to_buy * entry.public_specs[1];
     }
     // step 4.1: check ending and create LP
-    function checkEndingandCreateLP(address token_addr) external onlyAdmin returns (bool){
+    function finalize(address token_addr) external onlyAdmin returns (bool){
         IDOToken storage entry = tokenInfo[token_addr];
         if (entry.public_specs[1] < block.timestamp || entry.amt  == 0) {
             //Now it is ending
             entry.valid = false;
             entry.is_approved = false;
             //Create LP
+            // Get min between cfx or pre-defined token amt
+            uint256 token_for_lp = (entry.amt_for_lp * entry.price_for_lp > entry.total_amt_of_CFX_for_IDO)? entry.total_amt_of_CFX_for_IDO/entry.price_for_lp : entry.amt_for_lp;
+            uint256 cfx_for_lp = (entry.amt_for_lp * entry.price_for_lp > entry.total_amt_of_CFX_for_IDO)? entry.total_amt_of_CFX_for_IDO : entry.amt_for_lp * entry.price_for_lp;
+            (bool success, bytes memory result) = router.call{value: cfx_for_lp}(abi.encodeWithSignature("addLiquidityETH(address,uint,uint,uint,address,uint)", token_addr, token_for_lp, 0, 0, 100)); //TODO: What is the deadline for other staking. How to realize immediate remove?
+            //TODO: how to prove its LP shares belong to token IDO owner
+            //TODO: how to do approval for all transferfrom?
+            if (success) {
+                (uint amountToken, uint amountETH,) = abi.decode(result, (uint, uint, uint));
+                SafeERC20.safeTransfer(IERC20(token_addr), entry.token_owner, entry.amt - amountToken);
+                payable(entry.token_owner).transfer(entry.total_amt_of_CFX_for_IDO - amountETH);
+            }else{
+                SafeERC20.safeTransfer(IERC20(token_addr), entry.token_owner, entry.amt);
+                payable(entry.token_owner).transfer(entry.total_amt_of_CFX_for_IDO);
+            }
             return true;
         }
         return false;
@@ -255,5 +283,5 @@ contract idoplatform {
         SafeERC20.safeTransfer(IERC20(token_addr), msg.sender, entry.buyers[msg.sender]);
         entry.buyers[msg.sender] = 0;
     }
-
+    //step 5: try to let users to deposit into LP
 }
