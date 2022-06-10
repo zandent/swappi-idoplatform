@@ -215,7 +215,7 @@ contract idoplatform {
             entry.private_specs[1] = entry.private_specs[1] - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
         }else{
-            //TODO: calculate current veToken
+            //calculate current veToken
             uint256 veTokenAmt = _balanceOfAtTimestamp(msg.sender, block.timestamp);
             require (veTokenAmt >= entry.private_specs[0], "Your veToken cannot reach threshold");
             entry.amt = entry.amt - amt_to_buy;
