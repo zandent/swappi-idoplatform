@@ -146,7 +146,7 @@ contract idoplatform {
         entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.publicSpecs[1];
     }
     // step 4.1: check ending and create LP
-    function finalize(address token_addr) external returns (bool){
+    function finalize(address token_addr) public returns (bool){
         IDOToken storage entry = tokenInfo[token_addr];
         if (entry.valid && entry.isApproved) {
             if (entry.publicSpecs[1] < block.timestamp || entry.amt  == 0) {
@@ -175,6 +175,7 @@ contract idoplatform {
     }
     //step 4.2: user claim tokens
     function claimAllTokens(address token_addr) external {
+        finalize(token_addr);
         IDOToken storage entry = tokenInfo[token_addr];
         require(entry.publicSpecs[1] < block.timestamp || entry.amt  == 0, "IDO is still active");
         require(entry.buyers[msg.sender] > 0, "Your amount of this token is zero");
