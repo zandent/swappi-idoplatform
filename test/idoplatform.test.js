@@ -39,7 +39,8 @@ describe("idoplatform Smart Contract Tests", function () {
         const factory0  = new ethers.ContractFactory(PPIToken.abi, PPIToken.bytecode, adminAddr);
         PPITokenContract = await factory0.deploy();
         await PPITokenContract.deployed();
-        await PPITokenContract.mint(buyer1.address, 100);
+        await PPITokenContract.mint(buyer0.address, 1000);
+        await PPITokenContract.mint(buyer1.address, 1000);
         console.log(`PPI contract address: ${PPITokenContract.address}`);
 
         //Deploy WCFX token use PPI as an example: easy to mint
@@ -51,8 +52,11 @@ describe("idoplatform Smart Contract Tests", function () {
 
         //Deploy NFT
         const factory1  = new ethers.ContractFactory(SwappiNFT.abi, SwappiNFT.bytecode, adminAddr);
-        swappiNFTContract = await factory1.deploy("Swappi NFT Contract", "SwappiNFT", 1000, "https://aliyuncs.com/0", PPITokenContract.address, buyer0.address, 200);
+        swappiNFTContract = await factory1.deploy("Swappi NFT Contract", "SwappiNFT", 1000, "https://aliyuncs.com/0", PPITokenContract.address, adminAddr.address, 200);
         await swappiNFTContract.deployed();
+        await swappiNFTContract.enableMint();
+        await PPITokenContract.connect(buyer0).approve(swappiNFTContract.address, 200, {gasLimit: 1000000,});
+        await swappiNFTContract.connect(buyer0).mint({gasLimit: 1000000,});
         console.log(`swappiNFT contract address: ${swappiNFTContract.address}`);
 
         //Deploy veToken
