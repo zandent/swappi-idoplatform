@@ -72,6 +72,12 @@ contract idoplatform is Ownable{
     function getCurrentIDOIdByTokenAddr(address token_addr) external view returns (uint256) {
         return currentIDOId[token_addr];
     }
+    function isIDOActiveByID(address token_addr, uint256 id) external view returns (bool) {
+        return tokenInfo[token_addr][id].valid;
+    }
+    function getAmtOfCFXCollected(address token_addr, uint256 id) external view returns (uint256) {
+        return tokenInfo[token_addr][id].amtOfCFXCollected;
+    }
     // Step 1: admin should approval one token's new IDO
     function adminApproval(
         address token_addr,
@@ -163,8 +169,8 @@ contract idoplatform is Ownable{
         entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price;
     }
     // step 4.1: check ending and create LP
-    function finalize(address token_addr) public returns (bool){
-        IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
+    function finalize(address token_addr, uint256 IDOId) public returns (bool){
+        IDOToken storage entry = tokenInfo[token_addr][IDOId];
         if (entry.valid && entry.isApproved) {
             if (entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0) {
                 //Now it is ending
@@ -191,9 +197,9 @@ contract idoplatform is Ownable{
         return false;
     }
     //step 4.2: user claim tokens
-    function claimAllTokens(address token_addr) external {
-        finalize(token_addr);
-        IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
+    function claimAllTokens(address token_addr, uint256 IDOId) external {
+        finalize(token_addr, IDOId);
+        IDOToken storage entry = tokenInfo[token_addr][IDOId];
         require(entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0, "IDO is still active");
         require(entry.buyers[msg.sender] > 0, "Your amount of this token is zero");
         SafeERC20.safeTransfer(IERC20(token_addr), msg.sender, entry.buyers[msg.sender]);
