@@ -91,9 +91,12 @@ function claimAllTokens(address token_addr, uint256 IDOId) external;
 > If token owner raised IDO multiple times, user still can claim token by specifying IDO Id.
 6. Anyone can create LP by invoking:
 ```solidity
+// true means LP is created successfully.
 function finalize(address token_addr, uint256 IDOId) public returns (bool);
 ```
 > The function will return all of the remaining tokens and CFX in the IDO to token owner as well.
+
+> The function is built in **claimAllTokens()**. No need to invoke if some user claims already.
 
 ## Corner case handling (Not finished) (TODO)
 1. If token owner failed to invoke **addIDOToken()**, admin can approval a new IDO even if the IDO is approved.
