@@ -74,6 +74,7 @@ function adminApproval(
 ```solidity
 function addIDOToken(address token_addr) external;
 ```
+> Token owner should invoke **approval()** to approve a totol amount of `amt*(100+ratioForLP)/100` new token to IDO Platform contract
 3. After private sale starts, users can trade *amt_to_buy* of token with CFX by invoking:
 ```solidity
 function privateSale(address token_addr, uint256 amt_to_buy) external payable;
