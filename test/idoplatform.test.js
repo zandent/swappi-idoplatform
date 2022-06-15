@@ -5,6 +5,7 @@ let SwappiNFT = require(`./SwappiNFT.sol/SwappiNFT.json`);
 let VotingEscrow = require(`./VotingEscrow.sol/VotingEscrow.json`);
 let SwappiRouter = require(`./SwappiRouter.sol/SwappiRouter.json`);
 let SwappiFactory = require(`./SwappiFactory.sol/SwappiFactory.json`);
+let SwappiPair = require(`./SwappiPair.sol/SwappiPair.json`);
 describe("idoplatform Smart Contract Tests", function () {
     let PPITokenContract;
     let wcfxContract;
@@ -45,11 +46,10 @@ describe("idoplatform Smart Contract Tests", function () {
         await PPITokenContract.mint(buyer1.address, 1000);
         // console.log(`PPI contract address: ${PPITokenContract.address}`);
 
-        //Deploy WCFX token use PPI as an example: easy to mint
-        const factory6 = new ethers.ContractFactory(PPIToken.abi, PPIToken.bytecode, adminAddr);
+        //Deploy WCFX
+        const factory6 = await ethers.getContractFactory("WCFX");
         wcfxContract = await factory6.deploy();
         await wcfxContract.deployed();
-        await wcfxContract.mint(adminAddr.address, 100000000);
         // console.log(`WCFX contract address: ${wcfxContract.address}`);
 
         //Deploy NFT
@@ -76,7 +76,7 @@ describe("idoplatform Smart Contract Tests", function () {
         await PPITokenContract.connect(buyer1).approve(veTokenContract.address, 1000, {gasLimit: 1000000,});
         await veTokenContract.connect(buyer1).createLock(1000, timestampBefore + 31536000, {gasLimit: 1000000,});
 
-        //Deploy new token
+        //Deploy new token use PPI as example
         const factory3  = new ethers.ContractFactory(PPIToken.abi, PPIToken.bytecode, tokenOwner);
         tokenContract = await factory3.deploy();
         await tokenContract.deployed();
@@ -120,7 +120,7 @@ describe("idoplatform Smart Contract Tests", function () {
         // // console.log(`last block timestamp: ${timestampBefore}`);
         privateSpecs.push(timestampBefore + 1000, timestampBefore + 2000);
         publicSpecs.push(timestampBefore + 3000);
-        await idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, privateSpecs, publicSpecs, false, 0);
+        await idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, privateSpecs, publicSpecs);
         expect(await idoplatformContract.getCurrentIDOIdByTokenAddr(tokenContract.address)).to.equal(1);
         await expect(idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, {gasLimit: 1000000,})).to.be.reverted;
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(false);
@@ -163,15 +163,20 @@ describe("idoplatform Smart Contract Tests", function () {
         //push to end time
         await ethers.provider.send('evm_increaseTime', [1000]);
         await ethers.provider.send('evm_mine');
-        await idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
+        await idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 10000000,});
         await idoplatformContract.connect(buyer1).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
         await idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
 
         //check balance
-        expect(await tokenContract.balanceOf(tokenOwner.address)).to.equal(totalAmt - 2000000 - 400 - 60000 - 300);
         expect(await tokenContract.balanceOf(buyer2.address)).to.equal(400);
         expect(await tokenContract.balanceOf(buyer1.address)).to.equal(60000);
         expect(await tokenContract.balanceOf(buyer0.address)).to.equal(300);
+        expect(await tokenContract.balanceOf(tokenOwner.address)).to.equal(totalAmt - 121800/priceForLP - 400 - 60000 - 300);
+    
+        //check LP token
+        let LPAddr = await SwappiFactoryContract.getPair(tokenContract.address, wcfxContract.address);
+        let SwappiPairContract = new ethers.Contract(LPAddr, SwappiPair.abi, tokenOwner);
+        expect(await SwappiPairContract.balanceOf(tokenOwner.address)).to.not.equal(0);
         
     })
 }

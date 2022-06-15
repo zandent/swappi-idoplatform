@@ -47,7 +47,6 @@ contract idoplatform is Ownable{
         uint256 amtOfCFXCollected; 
         privateSpecs priSaleInfo; //veToken_threshold, amount, price, start time, end time
         publicSpecs pubSaleInfo; // price, end time
-        uint256 maxAmtPerBuyer; // the limit per buyer for the token
         mapping(address => uint256) buyers; // record the amount of token buyer buys
     }
     /// @notice Mapping from token address to current IDO id.
@@ -86,9 +85,7 @@ contract idoplatform is Ownable{
         uint256 ratioForLP,
         uint256 priceForLP,
         uint256[5] memory privateData, //veToken_threshold, amount, price, start time, end time
-        uint256[2] memory publicData, // price, end time
-        bool hasAmtLimitPerBuyer,
-        uint256 maxAmtPerBuyer // set uint256(-1) if no upper limit
+        uint256[2] memory publicData // price, end time
         ) external onlyOwner {
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]+1];
         // require(entry.currentIDOId == false, "This token IDO is already active");
@@ -112,7 +109,6 @@ contract idoplatform is Ownable{
                                                               privateData[4]);
         entry.pubSaleInfo                    = publicSpecs(  publicData[0], 
                                                               publicData[1]);
-        entry.maxAmtPerBuyer                 = hasAmtLimitPerBuyer? maxAmtPerBuyer : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         currentIDOId[token_addr]           = currentIDOId[token_addr] + 1;
     }
     // Step 2: let the token owner transfer tokens to "this" and start its sale
@@ -139,7 +135,6 @@ contract idoplatform is Ownable{
         require(entry.priSaleInfo.amount > 0, "This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.priSaleInfo.amount, "Not enough token to trade");
         require (msg.value >= amt_to_buy * entry.priSaleInfo.price, "Not enough CFX to trade");
-        require (amt_to_buy + entry.buyers[msg.sender] <= entry.maxAmtPerBuyer, "It will or already exceed the max limit");
         if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
@@ -180,14 +175,14 @@ contract idoplatform is Ownable{
                 // Get min between cfx or pre-defined token amt
                 uint256 token_for_lp = (entry.amtForLP * entry.priceForLP > entry.amtOfCFXCollected)? entry.amtOfCFXCollected/entry.priceForLP : entry.amtForLP;
                 uint256 cfx_for_lp = (entry.amtForLP * entry.priceForLP > entry.amtOfCFXCollected)? entry.amtOfCFXCollected : entry.amtForLP * entry.priceForLP;
-                (bool success, bytes memory result) = router.call{value: cfx_for_lp}(abi.encodeWithSignature("addLiquidityETH(address,uint,uint,uint,address,uint)", token_addr, token_for_lp, 0, 0, block.timestamp + 1));
+                IERC20(token_addr).approve(router, token_for_lp);
+                (bool success, bytes memory result) = router.call{value: cfx_for_lp}(abi.encodeWithSignature("addLiquidityETH(address,uint256,uint256,uint256,address,uint256)", token_addr, token_for_lp, 0, 0, entry.tokenOwner, block.timestamp + 1));
                 if (success) {
-                    (uint amountToken, uint amountETH, uint liquidity) = abi.decode(result, (uint, uint, uint));
-                    SafeERC20.safeTransfer(IERC20(token_addr), entry.tokenOwner, entry.amt - amountToken);
-                    SafeERC20.safeTransfer(IERC20(swappiFactory.getPair(token_addr, wcfx)), entry.tokenOwner, liquidity);
+                    (uint amountToken, uint amountETH, ) = abi.decode(result, (uint, uint, uint));
+                    SafeERC20.safeTransfer(IERC20(token_addr), entry.tokenOwner, entry.amt + entry.amtForLP - amountToken);
                     payable(entry.tokenOwner).transfer(entry.amtOfCFXCollected - amountETH);
                 }else{
-                    SafeERC20.safeTransfer(IERC20(token_addr), entry.tokenOwner, entry.amt);
+                    SafeERC20.safeTransfer(IERC20(token_addr), entry.tokenOwner, entry.amt + entry.amtForLP);
                     payable(entry.tokenOwner).transfer(entry.amtOfCFXCollected);
                 }
                 return true;
