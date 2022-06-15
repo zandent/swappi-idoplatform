@@ -6,6 +6,7 @@ let VotingEscrow = require(`./VotingEscrow.sol/VotingEscrow.json`);
 let SwappiRouter = require(`./SwappiRouter.sol/SwappiRouter.json`);
 let SwappiFactory = require(`./SwappiFactory.sol/SwappiFactory.json`);
 let SwappiPair = require(`./SwappiPair.sol/SwappiPair.json`);
+let WCFX = require(`./WCFX.sol/WCFX.json`);
 describe("idoplatform Smart Contract Tests", function () {
     let PPITokenContract;
     let wcfxContract;
@@ -47,7 +48,7 @@ describe("idoplatform Smart Contract Tests", function () {
         // console.log(`PPI contract address: ${PPITokenContract.address}`);
 
         //Deploy WCFX
-        const factory6 = await ethers.getContractFactory("WCFX");
+        const factory6 = new ethers.ContractFactory(WCFX.abi, WCFX.bytecode, adminAddr)
         wcfxContract = await factory6.deploy();
         await wcfxContract.deployed();
         // console.log(`WCFX contract address: ${wcfxContract.address}`);
