@@ -7,8 +7,8 @@ let NFTAddr = "0x873069890624Fe89A40DD39287e26bD9339B0f67";
 const addresses_file = "./contractAddressPublicTestnet.json";
 let addresses = require(`${addresses_file}`);
 let idoplatformJSON = require(`../artifacts/contracts/idoplatform.sol/idoplatform.json`);
-let idoplatformAddr = "0xd2715894c58859310C948d3BD47eB26f7819Fef3";
-let newTokenAddr = "0x811363AB00d1d2c0c3094a4403be2dC7D8a90574";
+let idoplatformAddr = "0x5D4c0D3F60178714d7029d084b7aa7bC5f60CBF7";
+let newTokenAddr = "0x49725acb75D2e105323E4b0273a43EF417ACbec1";
 let amt = 10000000;
 let ratioForLP = 20;
 let totalAmt = 20000000;
@@ -28,8 +28,9 @@ async function main() {
   let veTokenContract = new ethers.Contract(addresses.VotingEscrow, VotingEscrow.abi, buyer1);
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
   let idoplatformContract = new ethers.Contract(idoplatformAddr, idoplatformJSON.abi, admin);
-  let totalCFX = await idoplatformContract.connect(admin).getCurrentIDOIdByTokenAddr(newTokenContract.address, {gasLimit: 1000000,});
-  console.log("Current IDOID:", totalCFX.toString());
+  let ID = await idoplatformContract.connect(admin).getCurrentIDOIdByTokenAddr(newTokenContract.address, {gasLimit: 1000000,});
+  console.log("Current IDOID:", ID.toString());
+  console.log("Acive:", (await idoplatformContract.connect(admin).isIDOActiveByID(newTokenContract.address, totalCFX, {gasLimit: 1000000,})).toString());
 
 }
 

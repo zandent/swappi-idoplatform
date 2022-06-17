@@ -7,14 +7,14 @@ let NFTAddr = "0x873069890624Fe89A40DD39287e26bD9339B0f67";
 const addresses_file = "./contractAddressPublicTestnet.json";
 let addresses = require(`${addresses_file}`);
 let idoplatformJSON = require(`../artifacts/contracts/idoplatform.sol/idoplatform.json`);
-let idoplatformAddr = "0xd2715894c58859310C948d3BD47eB26f7819Fef3";
-let newTokenAddr = "0x811363AB00d1d2c0c3094a4403be2dC7D8a90574";
+let idoplatformAddr = "0x5D4c0D3F60178714d7029d084b7aa7bC5f60CBF7";
+let newTokenAddr = "0x49725acb75D2e105323E4b0273a43EF417ACbec1";
 let amt = 10000000;
 let ratioForLP = 20;
 let totalAmt = 20000000;
 let priceForLP = 2;
 // privateSpecs    [Threshold, amount, price]
-let privateSpecs = [200, 5000000, 2];
+let privateSpecs = [200, 20300, 2];
 // publicspecs    [price]
 let publicSpecs = [3];
 function delay(time) {
@@ -34,13 +34,13 @@ async function main() {
   var blockBefore = await ethers.provider.getBlock(blockNumBefore);
   var timestampBefore = blockBefore.timestamp;
   console.log(`last block timestamp: ${new Date(timestampBefore*1000)}`);
-  console.log(`Private sale start: ${new Date(timestampBefore*1000 + 300000)} public sale start: ${new Date(timestampBefore*1000 + 600000)} All end at: ${new Date(timestampBefore*1000 + 900000)}`);
-  privateSpecs.push(timestampBefore + 300, timestampBefore + 600);
-  publicSpecs.push(timestampBefore + 900);
+  console.log(`Private sale start: ${new Date(timestampBefore*1000 + 100000)} public sale start: ${new Date(timestampBefore*1000 + 200000)} All end at: ${new Date(timestampBefore*1000 + 300000)}`);
+  privateSpecs.push(timestampBefore + 100, timestampBefore + 200);
+  publicSpecs.push(timestampBefore + 300);
   
 
   await idoplatformContract.adminApproval(newTokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, privateSpecs, publicSpecs, {gasLimit: 1000000,});
-
+  await delay(5000);
   await newTokenContract.connect(tokenOwner).approve(idoplatformContract.address, amt * (100 + ratioForLP)/100, {gasLimit: 1000000,});
   await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, {gasLimit: 1000000,});
 

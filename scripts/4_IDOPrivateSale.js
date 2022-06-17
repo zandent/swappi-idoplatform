@@ -8,8 +8,8 @@ let NFTAddr = "0x873069890624Fe89A40DD39287e26bD9339B0f67";
 const addresses_file = "./contractAddressPublicTestnet.json";
 let addresses = require(`${addresses_file}`);
 let idoplatformJSON = require(`../artifacts/contracts/idoplatform.sol/idoplatform.json`);
-let idoplatformAddr = "0xd2715894c58859310C948d3BD47eB26f7819Fef3";
-let newTokenAddr = "0x811363AB00d1d2c0c3094a4403be2dC7D8a90574";
+let idoplatformAddr = "0x5D4c0D3F60178714d7029d084b7aa7bC5f60CBF7";
+let newTokenAddr = "0x49725acb75D2e105323E4b0273a43EF417ACbec1";
 let amt = 10000000;
 let ratioForLP = 20;
 let totalAmt = 20000000;
@@ -35,11 +35,11 @@ async function main() {
   //buyer1 buy
   await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 20000, {gasLimit: 1000000, value: 40000});
   await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 40000, {gasLimit: 1000000, value: 80000});
-  // // //buyer1 buy too much token
-  // // await expect(idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 10000000, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
-  // // //buyer2 buy in private sale
-  // // await expect(idoplatformContract.connect(buyer2).privateSale(newTokenContract.address, 1, {gasLimit: 1000000, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
-  // //balance Check
+  // //buyer1 buy too much token
+  // await expect(idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 10000000, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
+  // //buyer2 buy in private sale
+  // await expect(idoplatformContract.connect(buyer2).privateSale(newTokenContract.address, 1, {gasLimit: 1000000, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
+  //balance Check
   await delay(10000);
   let currentIDOID = await idoplatformContract.getCurrentIDOIdByTokenAddr(newTokenContract.address);
   console.log("Total CFX collected:", (await idoplatformContract.getAmtOfCFXCollected(newTokenContract.address, currentIDOID)).toString());
