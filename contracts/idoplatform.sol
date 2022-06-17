@@ -89,9 +89,9 @@ contract idoplatform is Ownable{
         ) external onlyOwner {
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]+1];
         // require(entry.currentIDOId == false, "This token IDO is already active");
-        require(entry.valid == false, "This token IDO is already active");
-        require(entry.isApproved == false, "This token IDO is already approved");
-        require(amt >= privateData[1], "private sale amount should not exceed total amount!");
+        require(entry.valid == false, "IDOPlatform: This token IDO is already active");
+        require(entry.isApproved == false, "IDOPlatform: This token IDO is already approved");
+        require(amt >= privateData[1], "IDOPlatform: private sale amount should not exceed total amount!");
         require(privateData[3] >= block.timestamp && privateData[3] < privateData[4] && privateData[4] < publicData[1], "timestamp setting is wrong");
         entry.isApproved                     = true;
         entry.valid                          = false;
@@ -119,9 +119,9 @@ contract idoplatform is Ownable{
         address token_addr
         ) external {
             IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
-            require(entry.isApproved == true, "Contact admin to approval your IDO");
-            require(entry.valid == false, "Your IDO already started");
-            require(entry.priSaleInfo.startTime >= block.timestamp, "You start IDO too late! Contact admin to change schedule");
+            require(entry.isApproved == true, "IDOPlatform: Contact admin to approval your IDO");
+            require(entry.valid == false, "IDOPlatform: Your IDO already started");
+            require(entry.priSaleInfo.startTime >= block.timestamp, "IDOPlatform: You start IDO too late! Contact admin to change schedule");
             entry.valid = true;
             entry.tokenOwner = msg.sender;
             SafeERC20.safeTransferFrom(IERC20(token_addr), msg.sender, address(this), entry.amt + entry.amtForLP);
@@ -130,13 +130,13 @@ contract idoplatform is Ownable{
     // step 3.2: private sale
     function privateSale(address token_addr, uint256 amt_to_buy) external payable{
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
-        require(entry.valid == true, "This token IDO has not started yet or expired");
-        require(entry.priSaleInfo.startTime <= block.timestamp, "This token IDO has not started!");
-        require(entry.priSaleInfo.endTime >= block.timestamp, "This token IDO already enterred public sale. No private sale");
+        require(entry.valid == true, "IDOPlatform: This token IDO has not started yet or expired");
+        require(entry.priSaleInfo.startTime <= block.timestamp, "IDOPlatform: This token IDO has not started!");
+        require(entry.priSaleInfo.endTime >= block.timestamp, "IDOPlatform: This token IDO already enterred public sale. No private sale");
         //if the amount of private is zero, revert the transaction
-        require(entry.priSaleInfo.amount > 0, "This token IDO already enterred public sale. Amount for private sale is zero");
-        require (amt_to_buy <= entry.priSaleInfo.amount, "Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.priSaleInfo.price, "Not enough CFX to trade");
+        require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
+        require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");
+        require (msg.value >= amt_to_buy * entry.priSaleInfo.price, "IDOPlatform: Not enough CFX to trade");
         if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
@@ -145,7 +145,7 @@ contract idoplatform is Ownable{
         }else{
             //calculate current veToken
             uint256 veTokenAmt = votingEscrow.balanceOf(msg.sender);
-            require (veTokenAmt >= entry.priSaleInfo.veTokenThreshold, "Your veToken cannot reach threshold");
+            require (veTokenAmt >= entry.priSaleInfo.veTokenThreshold, "IDOPlatform: Your veToken cannot reach threshold");
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
@@ -155,12 +155,12 @@ contract idoplatform is Ownable{
     // step 3.3: public sale
     function publicSale(address token_addr, uint256 amt_to_buy) external payable{
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
-        require(entry.priSaleInfo.endTime <= block.timestamp || entry.priSaleInfo.amount == 0, "This token IDO has not started!");
-        require(entry.pubSaleInfo.endTime >= block.timestamp, "Public sale already ended");
+        require(entry.priSaleInfo.endTime <= block.timestamp || entry.priSaleInfo.amount == 0, "IDOPlatform: This token IDO has not started!");
+        require(entry.pubSaleInfo.endTime >= block.timestamp, "IDOPlatform: Public sale already ended");
         //if the amount of private is zero, revert the transaction
-        require(entry.amt > 0, "This token is already sold out");
-        require (amt_to_buy <= entry.amt, "Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.pubSaleInfo.price, "Not enough CFX to trade");
+        require(entry.amt > 0, "IDOPlatform: This token is already sold out");
+        require (amt_to_buy <= entry.amt, "IDOPlatform: Not enough token to trade");
+        require (msg.value >= amt_to_buy * entry.pubSaleInfo.price, "IDOPlatform: Not enough CFX to trade");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
         entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price;
@@ -197,8 +197,8 @@ contract idoplatform is Ownable{
     function claimAllTokens(address token_addr, uint256 IDOId) external {
         finalize(token_addr, IDOId);
         IDOToken storage entry = tokenInfo[token_addr][IDOId];
-        require(entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0, "IDO is still active");
-        require(entry.buyers[msg.sender] > 0, "Your amount of this token is zero");
+        require(entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0, "IDOPlatform: IDO is still active");
+        require(entry.buyers[msg.sender] > 0, "IDOPlatform: Your amount of this token is zero");
         SafeERC20.safeTransfer(IERC20(token_addr), msg.sender, entry.buyers[msg.sender]);
         entry.buyers[msg.sender] = 0;
     }
