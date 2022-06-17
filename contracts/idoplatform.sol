@@ -155,7 +155,7 @@ contract idoplatform is Ownable{
     // step 3.3: public sale
     function publicSale(address token_addr, uint256 amt_to_buy) external payable{
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
-        require(entry.priSaleInfo.endTime <= block.timestamp, "This token IDO has not started!");
+        require(entry.priSaleInfo.endTime <= block.timestamp || entry.priSaleInfo.amount == 0, "This token IDO has not started!");
         require(entry.pubSaleInfo.endTime >= block.timestamp, "Public sale already ended");
         //if the amount of private is zero, revert the transaction
         require(entry.amt > 0, "This token is already sold out");
