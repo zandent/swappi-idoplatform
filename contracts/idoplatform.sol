@@ -27,6 +27,7 @@ contract idoplatform is Ownable{
         uint256 price;
         uint256 startTime;
         uint256 endTime;
+        uint256 totalAmt;
     }
     /// @notice specs for public sale
     struct publicSpecs {
@@ -39,8 +40,7 @@ contract idoplatform is Ownable{
         bool valid;
         address tokenOwner;
         string projectName;
-        // string symbol;
-        // uint8 decimals;
+        uint256 totalAmt;
         uint256 amt; // amount to sell
         uint256 amtForLP; //pre_defined amount for place LP
         uint256 priceForLP; //pre_defined amount of cfx for place LP
@@ -98,6 +98,7 @@ contract idoplatform is Ownable{
         entry.projectName                    = projectName;
         // entry.symbol                         = IERC20(token_addr).symbol();
         // entry.decimals                       = IERC20(token_addr).decimals();
+        entry.totalAmt                       = amt;
         entry.amt                            = amt;
         entry.amtForLP                       = uint256(amt * ratioForLP) /100;
         entry.priceForLP                     = priceForLP;
@@ -106,7 +107,8 @@ contract idoplatform is Ownable{
                                                               privateData[1], 
                                                               privateData[2], 
                                                               privateData[3],
-                                                              privateData[4]);
+                                                              privateData[4],
+                                                              privateData[1]);
         entry.pubSaleInfo                    = publicSpecs(  publicData[0], 
                                                               publicData[1]);
         currentIDOId[token_addr]           = currentIDOId[token_addr] + 1;

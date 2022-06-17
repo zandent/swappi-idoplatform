@@ -16,6 +16,7 @@ struct privateSpecs {
     uint256 price;            // The price
     uint256 startTime;        // start time
     uint256 endTime;          // end time
+    uint256 totalAmt;         // pre-defined total amout for private sale
 }
 ```
 ```solidity
@@ -29,7 +30,8 @@ struct IDOToken {
     bool isApproved; //assert the flag by admin to allow token owner to start IDO
     bool valid; //assert the falg by toke owner to be ready to start IDO
     address tokenOwner; //token owner
-    string projectName; //name of the project    
+    string projectName; //name of the project   
+    uint256 totalAmt;   //pre-defiend total amount for trading in IDO 
     uint256 amt; // The remaining amount to trade in IDO
     uint256 amtForLP; // Pre-defined amount for placing LP
     uint256 priceForLP; // Pre-defined amount of cfx for placing LP
