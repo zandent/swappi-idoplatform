@@ -164,6 +164,9 @@ describe("idoplatform Smart Contract Tests", function () {
         //push to end time
         await ethers.provider.send('evm_increaseTime', [1000]);
         await ethers.provider.send('evm_mine');
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer2.address)).to.equal(400);
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer1.address)).to.equal(60000);
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer0.address)).to.equal(300);
         await idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 10000000,});
         await idoplatformContract.connect(buyer1).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
         await idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
@@ -172,6 +175,10 @@ describe("idoplatform Smart Contract Tests", function () {
         expect(await tokenContract.balanceOf(buyer2.address)).to.equal(400);
         expect(await tokenContract.balanceOf(buyer1.address)).to.equal(60000);
         expect(await tokenContract.balanceOf(buyer0.address)).to.equal(300);
+        
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer2.address)).to.equal(0);
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer1.address)).to.equal(0);
+        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer0.address)).to.equal(0);
         expect(await tokenContract.balanceOf(tokenOwner.address)).to.equal(totalAmt - 121800/priceForLP - 400 - 60000 - 300);
     
         //check LP token

@@ -55,6 +55,8 @@ function getCurrentIDOIdByTokenAddr(address token_addr) external view returns (u
 function isIDOActiveByID(address token_addr, uint256 id) external view returns (bool);
 // Check the total amount of CFX collected till now by token address and IDO Id
 function getAmtOfCFXCollected(address token_addr, uint256 id) external view returns (uint256);
+// Check the amount of the token user can claim till now
+function getAmtOfTokenForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256);
 ```
 ### Regular steps
 After token owner contacts and requests admin to raise IDO,

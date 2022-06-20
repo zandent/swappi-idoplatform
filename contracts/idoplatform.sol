@@ -77,6 +77,9 @@ contract idoplatform is Ownable{
     function getAmtOfCFXCollected(address token_addr, uint256 id) external view returns (uint256) {
         return tokenInfo[token_addr][id].amtOfCFXCollected;
     }
+    function getAmtOfTokenForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256) {
+        return tokenInfo[token_addr][id].buyers[buyer_addr];
+    }
     // Step 1: admin should approval one token's new IDO
     function adminApproval(
         address token_addr,
