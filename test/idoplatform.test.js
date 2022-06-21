@@ -22,12 +22,13 @@ describe("idoplatform Smart Contract Tests", function () {
     let buyer2; //Not enough veToken
     let veTokenContractDeployer;
     // string memory projectName,
-    let amt = 10000000;
+    let amt = '10000000000000000000000000'; // 10000000
     let ratioForLP = 20;
-    let totalAmt = 20000000;
+    let amtIncludingLP = '12000000000000000000000000';// amt * (1+ratioForLP%)
+    let totalAmt = '20000000000000000000000000'; // 20000000
     let priceForLP = 2;
     // privateSpecs    [Threshold, amount, price]
-    let privateSpecs = [200, 5000000, 2];
+    let privateSpecs = [200, '5000000000000000000000000', 2]; // 5000000
     // publicspecs    [price]
     let publicSpecs = [3];
     let maxAmtPerBuyer = 10000;
@@ -125,7 +126,7 @@ describe("idoplatform Smart Contract Tests", function () {
         expect(await idoplatformContract.getCurrentIDOIdByTokenAddr(tokenContract.address)).to.equal(1);
         await expect(idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, {gasLimit: 1000000,})).to.be.reverted;
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(false);
-        await tokenContract.connect(tokenOwner).approve(idoplatformContract.address, amt * (100 + ratioForLP)/100, {gasLimit: 1000000,});
+        await tokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: 1000000,});
         await idoplatformContract.connect(tokenOwner).addIDOToken(tokenContract.address, {gasLimit: 1000000,});
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(true);
 
@@ -133,19 +134,19 @@ describe("idoplatform Smart Contract Tests", function () {
         await ethers.provider.send('evm_increaseTime', [1000]);
         await ethers.provider.send('evm_mine');
         //buyer0 buy
-        await idoplatformContract.connect(buyer0).privateSale(tokenContract.address, 100, {gasLimit: 1000000, value: 200});
+        await idoplatformContract.connect(buyer0).privateSale(tokenContract.address, '100000000000000000000', {gasLimit: 1000000, value: 200});
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(200);
-        await idoplatformContract.connect(buyer0).privateSale(tokenContract.address, 200, {gasLimit: 1000000, value: 400});
+        await idoplatformContract.connect(buyer0).privateSale(tokenContract.address, '200000000000000000000', {gasLimit: 1000000, value: 400});
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(600);
         //buyer1 buy
-        await idoplatformContract.connect(buyer1).privateSale(tokenContract.address, 20000, {gasLimit: 1000000, value: 40000});
+        await idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '20000000000000000000000', {gasLimit: 1000000, value: 40000});
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(40600);
-        await idoplatformContract.connect(buyer1).privateSale(tokenContract.address, 40000, {gasLimit: 1000000, value: 80000});
+        await idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '40000000000000000000000', {gasLimit: 1000000, value: 80000});
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(120600);
         //buyer1 buy too much token
-        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, 10000000, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
+        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '10000000000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
         //buyer1 buy with low CFX
-        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, 2, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough CFX to trade');
+        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '2000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough CFX to trade');
         //buyer2 buy in private sale
         await expect(idoplatformContract.connect(buyer2).privateSale(tokenContract.address, 1, {gasLimit: 1000000, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
 
@@ -153,10 +154,10 @@ describe("idoplatform Smart Contract Tests", function () {
         await ethers.provider.send('evm_increaseTime', [1000]);
         await ethers.provider.send('evm_mine');
         //buyer2 buy in public sale
-        expect(await idoplatformContract.connect(buyer2).publicSale(tokenContract.address, 400, {gasLimit: 1000000, value: 1200}));
+        expect(await idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '400000000000000000000', {gasLimit: 1000000, value: 1200}));
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(121800);
-        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, 10000000, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
-        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, 1, {gasLimit: 1000000, value: 2})).to.be.revertedWith('Not enough CFX to trade');
+        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '10000000000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
+        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '1000000000000000000', {gasLimit: 1000000, value: 2})).to.be.revertedWith('Not enough CFX to trade');
 
         //try to claim now: should revert
         await expect(idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,})).to.be.revertedWith('IDO is still active');
@@ -164,22 +165,22 @@ describe("idoplatform Smart Contract Tests", function () {
         //push to end time
         await ethers.provider.send('evm_increaseTime', [1000]);
         await ethers.provider.send('evm_mine');
-        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer2.address)).to.equal(400);
-        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer1.address)).to.equal(60000);
-        expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer0.address)).to.equal(300);
+        expect((await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer2.address)).toString()).to.equal('400000000000000000000');
+        expect((await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer1.address)).toString()).to.equal('60000000000000000000000');
+        expect((await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer0.address)).toString()).to.equal('300000000000000000000');
         await idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 10000000,});
         await idoplatformContract.connect(buyer1).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
         await idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,});
 
         //check balance
-        expect(await tokenContract.balanceOf(buyer2.address)).to.equal(400);
-        expect(await tokenContract.balanceOf(buyer1.address)).to.equal(60000);
-        expect(await tokenContract.balanceOf(buyer0.address)).to.equal(300);
+        expect((await tokenContract.balanceOf(buyer2.address)).toString()).to.equal('400000000000000000000');
+        expect((await tokenContract.balanceOf(buyer1.address)).toString()).to.equal('60000000000000000000000');
+        expect((await tokenContract.balanceOf(buyer0.address)).toString()).to.equal('300000000000000000000');
         
         expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer2.address)).to.equal(0);
         expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer1.address)).to.equal(0);
         expect(await idoplatformContract.getAmtOfTokenForBuyer(tokenContract.address, 1, buyer0.address)).to.equal(0);
-        expect(await tokenContract.balanceOf(tokenOwner.address)).to.equal(totalAmt - 121800/priceForLP - 400 - 60000 - 300);
+        expect(await tokenContract.balanceOf(tokenOwner.address)).to.equal('19878400000000000000000000'); //totalAmt - 121800/priceForLP - 400 - 60000 - 300
     
         //check LP token
         let LPAddr = await SwappiFactoryContract.getPair(tokenContract.address, wcfxContract.address);

@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@swappi-libs/swappi-core/contracts/interfaces/ISwappiFactory.sol";
 import "../interfaces/IVotingEscrow.sol";
+// import "hardhat/console.sol";
 contract idoplatform is Ownable{
     //WCFX address
     address wcfx;
@@ -139,12 +140,12 @@ contract idoplatform is Ownable{
         //if the amount of private is zero, revert the transaction
         require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.priSaleInfo.price, "IDOPlatform: Not enough CFX to trade");
+        require (msg.value >= amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: Not enough CFX to trade");
         if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price;
+            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
         }else{
             //calculate current veToken
             uint256 veTokenAmt = votingEscrow.balanceOf(msg.sender);
@@ -152,7 +153,7 @@ contract idoplatform is Ownable{
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price;
+            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
         }
     }
     // step 3.3: public sale
@@ -163,10 +164,10 @@ contract idoplatform is Ownable{
         //if the amount of private is zero, revert the transaction
         require(entry.amt > 0, "IDOPlatform: This token is already sold out");
         require (amt_to_buy <= entry.amt, "IDOPlatform: Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.pubSaleInfo.price, "IDOPlatform: Not enough CFX to trade");
+        require (msg.value >= amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: Not enough CFX to trade");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-        entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price;
+        entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());
     }
     // step 4.1: check ending and create LP
     function finalize(address token_addr, uint256 IDOId) public returns (bool){
@@ -178,8 +179,9 @@ contract idoplatform is Ownable{
                 entry.isApproved = false;
                 // Create LP
                 // Get min between cfx or pre-defined token amt
-                uint256 token_for_lp = (entry.amtForLP * entry.priceForLP > entry.amtOfCFXCollected)? entry.amtOfCFXCollected/entry.priceForLP : entry.amtForLP;
-                uint256 cfx_for_lp = (entry.amtForLP * entry.priceForLP > entry.amtOfCFXCollected)? entry.amtOfCFXCollected : entry.amtForLP * entry.priceForLP;
+                uint256 preDefinedTotalValue = entry.amtForLP * entry.priceForLP / (10 ** IERC20(token_addr).decimals());
+                uint256 token_for_lp = (preDefinedTotalValue > entry.amtOfCFXCollected)? entry.amtOfCFXCollected/entry.priceForLP*(10 ** IERC20(token_addr).decimals()) : entry.amtForLP;
+                uint256 cfx_for_lp = (preDefinedTotalValue > entry.amtOfCFXCollected)? entry.amtOfCFXCollected : preDefinedTotalValue;
                 IERC20(token_addr).approve(router, token_for_lp);
                 (bool success, bytes memory result) = router.call{value: cfx_for_lp}(abi.encodeWithSignature("addLiquidityETH(address,uint256,uint256,uint256,address,uint256)", token_addr, token_for_lp, 0, 0, entry.tokenOwner, block.timestamp + 1));
                 if (success) {
