@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { BigNumber } = require("ethers");
 let PPIToken = require(`./PPIToken.sol/PPIToken.json`);
 let SwappiNFT = require(`./SwappiNFT.sol/SwappiNFT.json`);
 let VotingEscrow = require(`./VotingEscrow.sol/VotingEscrow.json`);
@@ -24,7 +25,7 @@ describe("idoplatform Smart Contract Tests", function () {
     // string memory projectName,
     let amt = '10000000000000000000000000'; // 10000000
     let ratioForLP = 20;
-    let amtIncludingLP = '12000000000000000000000000';// amt * (1+ratioForLP%)
+    let amtIncludingLP = (BigNumber.from(amt).mul(100+ratioForLP).div(100)).toHexString();
     let totalAmt = '20000000000000000000000000'; // 20000000
     let priceForLP = 2;
     // privateSpecs    [Threshold, amount, price]

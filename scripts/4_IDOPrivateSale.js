@@ -1,46 +1,41 @@
-const { expect } = require("chai");
-let PPIToken = require(`../test/PPIToken.sol/PPIToken.json`);
-let SwappiNFT = require(`../test/SwappiNFT.sol/SwappiNFT.json`);
-let VotingEscrow = require(`../test/VotingEscrow.sol/VotingEscrow.json`);
-let SwappiRouter = require(`../test/SwappiRouter.sol/SwappiRouter.json`);
-let SwappiFactory = require(`../test/SwappiFactory.sol/SwappiFactory.json`);
-let NFTAddr = "0x873069890624Fe89A40DD39287e26bD9339B0f67";
-const addresses_file = "./contractAddressPublicTestnet.json";
-let addresses = require(`${addresses_file}`);
-let idoplatformJSON = require(`../artifacts/contracts/idoplatform.sol/idoplatform.json`);
-let idoplatformAddr = "0x5D4c0D3F60178714d7029d084b7aa7bC5f60CBF7";
-let newTokenAddr = "0x49725acb75D2e105323E4b0273a43EF417ACbec1";
-let amt = 10000000;
-let ratioForLP = 20;
-let totalAmt = 20000000;
-let priceForLP = 2;
-// privateSpecs    [Threshold, amount, price]
-let privateSpecs = [200, 5000000, 2];
-// publicspecs    [price]
-let publicSpecs = [3];
-function delay(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
+const { BigNumber } = require("ethers");
+const config = require('../script-config.js');
+const specs = config.specs;
+let addresses = require('./'+specs.testNetFileName);
+let PPIToken       = specs.PPIToken     ;
+let SwappiNFT      = specs.SwappiNFT    ;
+let VotingEscrow   = specs.VotingEscrow ;
+let SwappiRouter   = specs.SwappiRouter ;
+let SwappiFactory  = specs.SwappiFactory;
+let NFTAddr = specs.NFTAddr;
+let idoplatformJSON = specs.idoplatformJSON;
+let idoplatformAddr = specs.idoplatformAddr;
+let newTokenAddr = specs.newTokenAddr;
+let amt = specs.amt;
+let ratioForLP = specs.ratioForLP;
+let amtIncludingLP = (BigNumber.from(amt).mul(100+ratioForLP).div(100)).toHexString();// amt * (1+ratioForLP%)
+let totalAmt = specs.totalAmt;
+let priceForLP = specs.priceForLP;
+let privateSpecs = specs.privateSpecs;
+let publicSpecs = specs.publicSpecs;
 async function main() {
-  const addresses_file = "./contractAddressPublicTestnet.json";
-  let addresses = require(`${addresses_file}`);
   const [admin, buyer1, buyer2, tokenOwner, buyer0] = await ethers.getSigners();
   let PPITokenContract = new ethers.Contract(addresses.PPI, PPIToken.abi, buyer1);
   let veTokenContract = new ethers.Contract(addresses.VotingEscrow, VotingEscrow.abi, buyer1);
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
   let idoplatformContract = new ethers.Contract(idoplatformAddr, idoplatformJSON.abi, admin);
   //buyer0 buy
-  await idoplatformContract.connect(buyer0).privateSale(newTokenContract.address, 100, {gasLimit: 1000000, value: 200});
-  await idoplatformContract.connect(buyer0).privateSale(newTokenContract.address, 200, {gasLimit: 1000000, value: 400});
+  await idoplatformContract.connect(buyer0).privateSale(newTokenContract.address, specs.buyer0FirstPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer0FirstPurchase[1]});
+  await idoplatformContract.connect(buyer0).privateSale(newTokenContract.address, specs.buyer0SecondPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer0SecondPurchase[1]});
   //buyer1 buy
-  await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 20000, {gasLimit: 1000000, value: 40000});
-  await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 40000, {gasLimit: 1000000, value: 80000});
+  await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, specs.buyer1FirstPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer1FirstPurchase[1]});
+  await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, specs.buyer1SecondPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer1SecondPurchase[1]});
   // //buyer1 buy too much token
-  // await expect(idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 10000000, {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
+  // await expect(idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 10000000, {gasLimit: specs.OneMillionGasLimit, value: 0})).to.be.revertedWith('Not enough token to trade');
   // //buyer2 buy in private sale
-  // await expect(idoplatformContract.connect(buyer2).privateSale(newTokenContract.address, 1, {gasLimit: 1000000, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
+  // await expect(idoplatformContract.connect(buyer2).privateSale(newTokenContract.address, 1, {gasLimit: specs.OneMillionGasLimit, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
   //balance Check
-  await delay(10000);
+  await config.delay(10000);
   let currentIDOID = await idoplatformContract.getCurrentIDOIdByTokenAddr(newTokenContract.address);
   console.log("Total CFX collected:", (await idoplatformContract.getAmtOfCFXCollected(newTokenContract.address, currentIDOID)).toString());
 
