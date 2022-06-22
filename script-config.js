@@ -1,4 +1,3 @@
-const { BigNumber } = require("ethers");
 const specs = {
   testNetFileName: 'contractAddressPublicTestnet.json',
   testNetUrl: 'http://evmtestnet.confluxrpc.com',
