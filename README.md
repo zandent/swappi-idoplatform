@@ -4,9 +4,15 @@
 ## Unit test
 `npx hardhat test`
 ## Testnet test
-npx hardhat run --network testnet scripts/<js files>
+`npx hardhat run --network testnet scripts/<js files>`
 > Order is from 0_* to 7_*. Change idoplatform and new token addresses once newly deployed.
-## Deploy Script (TODO)
+## Mainnet/Testnet test together with front end
+`npx hardhat run --network testnet scripts_with_frontend/0_deployNewToken.js`
+> Token owner creates new token first
+`npx hardhat run --network testnet scripts_with_frontend/1_adminApproval.js`
+> Admin approves the IDO after collecting all information about IDO from token owner
+`npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
+> Token owner starts IDO status into upcoming
 
 ## Struct and State Varibles
 ```solidity
