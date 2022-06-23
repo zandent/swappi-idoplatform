@@ -7,12 +7,20 @@
 `npx hardhat run --network testnet scripts/<js files>`
 > Order is from 0_* to 7_*. Change idoplatform and new token addresses once newly deployed.
 ## Mainnet/Testnet test together with front end
-`npx hardhat run --network testnet scripts_with_frontend/0_deployNewToken.js`
-> Token owner creates new token first
-`npx hardhat run --network testnet scripts_with_frontend/1_adminApproval.js`
-> Admin approves the IDO after collecting all information about IDO from token owner
-`npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
-> Token owner starts IDO status into upcoming
+- (Optional) Token owner creates new token first (Here we use PPI ERC20 token)
+
+    `npx hardhat run --network testnet scripts_with_frontend/0_deployNewToken.js`
+- Check specifications under [script-config.js](script-config.js)
+
+- Admin approves the IDO after collecting all information about IDO from token owner
+
+    `npx hardhat run --network testnet scripts_with_frontend/1_adminApproval.js`
+
+- Add new token information in [index.json under repo: swappi-core](https://github.com/swappidex/swappi-core/tree/dev/config/tokens/launchpad)
+
+- Token owner starts IDO and move it into upcoming status
+
+    `npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
 
 ## Struct and State Varibles
 ```solidity

@@ -14,14 +14,14 @@ const specs = {
   idoplatformAddr: "0xbab4c5e843049fbc35f609da0223420a9a1126ba",
   newTokenAddr: "0x69BaEc26840C130192531D2807BF602238152C34",
 
-  amt: '10000000000000000000000000', // 10000000e18
-  ratioForLP: 20,
-  totalAmt: '20000000000000000000000000', // 20000000e18
-  priceForLP: 2,
-  // privateSpecs    [Threshold, amount, price, start time offset from current time, end time offset from current time]
-  privateSpecs: [200, '5000000000000000000000000', 2, 60, 120], // 5000000e18
+  amt: '10000000000000000000000000', // 10000000e18 // amount to sell in IDO * its decimals()
+  ratioForLP: '20',
+  totalAmt: '20000000000000000000000000', // 20000000e18 // Total supply for new token
+  priceForLP: '2',
+  // privateSpecs    [Threshold, amount * its decimals(), price, start time offset from current time, end time offset from current time]
+  privateSpecs: ['200', '5000000000000000000000000', '2', 60, 120], // 5000000e18
   // publicspecs    [price, end time offset from current time]
-  publicSpecs: [3, 180],
+  publicSpecs: ['3', 180],
   tokenProjectName: "BrandNewToken",
   //Purchase: [amt to buy, cfx value]
   buyer0FirstPurchase: ["100000000000000000000", "200"],
