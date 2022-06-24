@@ -11,8 +11,8 @@ const specs = {
   buyer0Key: "0x82e2bb8a09fdc87bc73329936433370b3b7edd79aa898bbbe7a6d0592f1cb12c",
 
   NFTAddr: "0x873069890624Fe89A40DD39287e26bD9339B0f67",
-  idoplatformAddr: "0xbab4c5e843049fbc35f609da0223420a9a1126ba",
-  newTokenAddr: "0x69BaEc26840C130192531D2807BF602238152C34",
+  idoplatformAddr: "0xD33e30aEB071170D5Fe770180ab8bae81958378e",
+  newTokenAddr: "0xF5B5E4629BA9668344a096Dd886E489715050Cf9",
 
   amt: '10000000000000000000000000', // 10000000e18 // amount to sell in IDO * its decimals()
   ratioForLP: '20',

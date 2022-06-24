@@ -71,6 +71,8 @@ function isIDOActiveByID(address token_addr, uint256 id) external view returns (
 function getAmtOfCFXCollected(address token_addr, uint256 id) external view returns (uint256);
 // Check the amount of the token user can claim till now
 function getAmtOfTokenForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256);
+// Check the amount of CFX user committed till now
+function getAmtOfCFXForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256);
 ```
 ### Regular steps
 After token owner contacts and requests admin to raise IDO,

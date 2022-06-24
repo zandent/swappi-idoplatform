@@ -35,6 +35,10 @@ async function main() {
   console.log("buyer0 owner owns:", (await newTokenContract.balanceOf(buyer0.address)).toString());
   console.log("buyer1 owner owns:", (await newTokenContract.balanceOf(buyer1.address)).toString());
   console.log("buyer2 owner owns:", (await newTokenContract.balanceOf(buyer2.address)).toString());
+  console.log("buyer0 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer0.address)).toString());
+  console.log("buyer1 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer1.address)).toString());
+  console.log("buyer2 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer2.address)).toString());
+  
 
 }
 

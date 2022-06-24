@@ -49,6 +49,7 @@ contract idoplatform is Ownable{
         privateSpecs priSaleInfo; //veToken_threshold, amount, price, start time, end time
         publicSpecs pubSaleInfo; // price, end time
         mapping(address => uint256) buyers; // record the amount of token buyer buys
+        mapping(address => uint256) amtOfCFXPerBuyer; // record the cfx of token buyer buys
     }
     /// @notice Mapping from token address to current IDO id.
     mapping(address => uint256) public currentIDOId;
@@ -80,6 +81,9 @@ contract idoplatform is Ownable{
     }
     function getAmtOfTokenForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256) {
         return tokenInfo[token_addr][id].buyers[buyer_addr];
+    }
+    function getAmtOfCFXForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256) {
+        return tokenInfo[token_addr][id].amtOfCFXPerBuyer[buyer_addr];
     }
     // Step 1: admin should approval one token's new IDO
     function adminApproval(
@@ -145,6 +149,7 @@ contract idoplatform is Ownable{
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
             entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
         }else{
             //calculate current veToken
@@ -153,6 +158,7 @@ contract idoplatform is Ownable{
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
             entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
         }
     }
@@ -167,6 +173,7 @@ contract idoplatform is Ownable{
         require (msg.value >= amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: Not enough CFX to trade");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+        entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());
         entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());
     }
     // step 4.1: check ending and create LP
