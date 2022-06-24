@@ -18,7 +18,7 @@
 
 - Add new token information in [index.json under repo: swappi-core](https://github.com/swappidex/swappi-core/tree/dev/config/tokens/launchpad)
 
-- Token owner starts IDO and move it into upcoming status
+- Token owner first approves idoplatform with the required amount of new ERC-20 token and sends the same amount of token to idoplatform. Meanwhile, token owner starts IDO and move it into upcoming status.
 
     `npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
 
