@@ -144,7 +144,7 @@ contract idoplatform is Ownable{
         //if the amount of private is zero, revert the transaction
         require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: Not enough CFX to trade");
+        require (msg.value == amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: The amount of commited CFX does not match the amount of token to buy");
         if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
@@ -165,12 +165,13 @@ contract idoplatform is Ownable{
     // step 3.3: public sale
     function publicSale(address token_addr, uint256 amt_to_buy) external payable{
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
+        require(entry.valid == true, "IDOPlatform: This token IDO has not started yet or expired");
         require(entry.priSaleInfo.endTime <= block.timestamp || entry.priSaleInfo.amount == 0, "IDOPlatform: This token IDO has not started!");
         require(entry.pubSaleInfo.endTime >= block.timestamp, "IDOPlatform: Public sale already ended");
         //if the amount of private is zero, revert the transaction
         require(entry.amt > 0, "IDOPlatform: This token is already sold out");
         require (amt_to_buy <= entry.amt, "IDOPlatform: Not enough token to trade");
-        require (msg.value >= amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: Not enough CFX to trade");
+        require (msg.value == amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: The amount of commited CFX does not match the amount of token to buy");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
         entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());

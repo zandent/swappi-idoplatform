@@ -22,7 +22,7 @@
 
     `npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
 
-## Struct and State Varibles
+## Struct and State Variables
 ```solidity
 struct privateSpecs {
     uint256 veTokenThreshold; // Score to enter private sale
