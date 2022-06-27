@@ -25,13 +25,13 @@ async function main() {
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
   let idoplatformContract = new ethers.Contract(idoplatformAddr, idoplatformJSON.abi, admin);
 
-  // getting timestamp
-  var blockNumBefore = await ethers.provider.getBlockNumber();
-  var blockBefore = await ethers.provider.getBlock(blockNumBefore);
-  var timestampBefore = blockBefore.timestamp;
-  privateSpecs[3] = timestampBefore + privateSpecs[3];
-  privateSpecs[4] = timestampBefore + privateSpecs[4];
-  publicSpecs[1]  = timestampBefore + publicSpecs[1];
+  // // getting timestamp
+  // var blockNumBefore = await ethers.provider.getBlockNumber();
+  // var blockBefore = await ethers.provider.getBlock(blockNumBefore);
+  // var timestampBefore = blockBefore.timestamp;
+  // privateSpecs[3] = timestampBefore + privateSpecs[3];
+  // privateSpecs[4] = timestampBefore + privateSpecs[4];
+  // publicSpecs[1]  = timestampBefore + publicSpecs[1];
   console.log(`Private sale start: ${new Date(privateSpecs[3]*1000)} \n public sale start: ${new Date(privateSpecs[4]*1000)} \n All end at: ${new Date(publicSpecs[1]*1000)}`);
   
   await idoplatformContract.adminApproval(newTokenContract.address, specs.tokenProjectName, amt, ratioForLP, priceForLP, privateSpecs, publicSpecs, {gasLimit: specs.OneMillionGasLimit,});

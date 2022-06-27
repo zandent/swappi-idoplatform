@@ -147,7 +147,7 @@ describe("idoplatform Smart Contract Tests", function () {
         //buyer1 buy too much token
         await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '10000000000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
         //buyer1 buy with low CFX
-        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '2000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('IDOPlatform: The amount of commited CFX does not match the amount of token to buy');
+        await expect(idoplatformContract.connect(buyer1).privateSale(tokenContract.address, '2000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('IDOPlatform: Not enough CFX to buy');
         //buyer2 buy in private sale
         await expect(idoplatformContract.connect(buyer2).privateSale(tokenContract.address, '1000000000000000000', {gasLimit: 1000000, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
 
@@ -158,8 +158,8 @@ describe("idoplatform Smart Contract Tests", function () {
         expect(await idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '400000000000000000000', {gasLimit: 1000000, value: 1200}));
         expect(await idoplatformContract.getAmtOfCFXCollected(tokenContract.address, 1)).to.be.equal(121800);
         await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '10000000000000000000000000', {gasLimit: 1000000, value: 0})).to.be.revertedWith('Not enough token to trade');
-        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '1000000000000000000', {gasLimit: 1000000, value: 10000000000000})).to.be.revertedWith('IDOPlatform: The amount of commited CFX does not match the amount of token to buy');
-
+        await expect(idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '1000000000000000000', {gasLimit: 1000000, value: 2})).to.be.revertedWith('IDOPlatform: Not enough CFX to buy');
+        await idoplatformContract.connect(buyer2).publicSale(tokenContract.address, '0', {gasLimit: 1000000, value: 0});
         //try to claim now: should revert
         await expect(idoplatformContract.connect(buyer2).claimAllTokens(tokenContract.address, 1, {gasLimit: 1000000,})).to.be.revertedWith('IDO is still active');
 

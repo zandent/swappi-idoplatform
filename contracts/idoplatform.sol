@@ -144,13 +144,13 @@ contract idoplatform is Ownable{
         //if the amount of private is zero, revert the transaction
         require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");
-        require (msg.value == amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: The amount of commited CFX does not match the amount of token to buy");
+        require (msg.value * (10 ** IERC20(token_addr).decimals()) >= amt_to_buy * entry.priSaleInfo.price, "IDOPlatform: Not enough CFX to buy");
         if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
+            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+            entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
         }else{
             //calculate current veToken
             uint256 veTokenAmt = votingEscrow.balanceOf(msg.sender);
@@ -158,8 +158,8 @@ contract idoplatform is Ownable{
             entry.amt = entry.amt - amt_to_buy;
             entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
             entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.priSaleInfo.price / (10 ** IERC20(token_addr).decimals());
+            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+            entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
         }
     }
     // step 3.3: public sale
@@ -171,11 +171,11 @@ contract idoplatform is Ownable{
         //if the amount of private is zero, revert the transaction
         require(entry.amt > 0, "IDOPlatform: This token is already sold out");
         require (amt_to_buy <= entry.amt, "IDOPlatform: Not enough token to trade");
-        require (msg.value == amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals()), "IDOPlatform: The amount of commited CFX does not match the amount of token to buy");
+        require (msg.value * (10 ** IERC20(token_addr).decimals()) >= amt_to_buy * entry.pubSaleInfo.price, "IDOPlatform: Not enough CFX to buy");
         entry.amt = entry.amt - amt_to_buy;
         entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-        entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());
-        entry.amtOfCFXCollected = entry.amtOfCFXCollected + amt_to_buy * entry.pubSaleInfo.price / (10 ** IERC20(token_addr).decimals());
+        entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+        entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
     }
     // step 4.1: check ending and create LP
     function finalize(address token_addr, uint256 IDOId) public returns (bool){
