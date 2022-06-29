@@ -6,7 +6,7 @@
 ## Testnet test
 `npx hardhat run --network testnet scripts/<js files>`
 > Order is from 0_* to 7_*. Change idoplatform and new token addresses once newly deployed.
-## Mainnet/Testnet test together with front end
+## Testnet test together with front end
 - (Optional) Token owner creates new token first (Here we use PPI ERC20 token)
 
     `npx hardhat run --network testnet scripts_with_frontend/0_deployNewToken.js`
@@ -21,6 +21,17 @@
 - Token owner first approves idoplatform with the required amount of new ERC-20 token and sends the same amount of token to idoplatform. Meanwhile, token owner starts IDO and move it into upcoming status.
 
     `npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
+
+- (Should be done if no users join and claim) Anyone can finalize to create LP and return remaining currencies back to token owner.
+
+    `npx hardhat run --network testnet scripts_with_frontend/3_finalize.js`
+
+## Mainnet test together with front end
+- Fill new private keys in `mainNetPrivateKey` and `mainNetTokenOwnerKey` entries in [script-config.js](script-config.js).
+
+- Follow Testnet test but use "`npx hardhat run --network mainnet mainnet_scripts_with_frontend/*`".
+
+- In terms of `addIDOTOken` step, please use scripts [here at another github repo](https://github.com/zandent/swappi-idoplatform-token-owner-scripts).
 
 ## Struct and State Variables
 ```solidity

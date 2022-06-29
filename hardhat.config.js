@@ -19,7 +19,8 @@ module.exports = {
     mainnet: {
       url: config.specs.mainNetUrl,
       accounts: [
-        config.specs.mainNetPrivateKey
+        config.specs.mainNetPrivateKey,
+        config.specs.mainNetTokenOwnerKey
       ]
     }
   }

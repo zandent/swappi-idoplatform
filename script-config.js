@@ -1,13 +1,15 @@
 const specs = {
   testNetFileName: 'contractAddressPublicTestnet.json',
+  // Mainnet file name
+  mainNetFileName: 'contractAddressMainnet.json',
   testNetUrl: 'http://evmtestnet.confluxrpc.com',
-  mainNetName: 'contractAddressMainnet.json',
   mainNetUrl: 'http://evm.confluxrpc.com',
   //Testnet NFT address
   NFTAddr: "0x873069890624Fe89A40DD39287e26bD9339B0f67",
   // Mainnet NFT address
-  // NFTAddr: "0xbbdba5043a73e87533b9378e58dea577a872dc04",
+  mainnetNFTAddr: "0xbbdba5043a73e87533b9378e58dea577a872dc04",
   mainNetPrivateKey: '0x1234567890123456789012345678901234567890123456789012345678901234',
+  mainNetTokenOwnerKey: "0x0234567890123456789012345678901234567890123456789012345678901234",//optional
   privateKey: "0x2a77751e7a5b4f6e0e5357779cf46fff745c7a70f0806ccc61f499372d13facf",
   buyer1Key: "0x02d4cb4c0b97fb2ba107e704a4176a025ba885fea583a7677342b351aeca7b79",
   buyer2Key: "0xc96290c3a414f10ccc0dcc3bee04ab30484575fcbbf91b6f2b993bbc21beb1de",
