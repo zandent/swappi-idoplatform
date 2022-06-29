@@ -140,7 +140,7 @@ contract idoplatform is Ownable{
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
         require(entry.valid == true, "IDOPlatform: This token IDO has not started yet or expired");
         require(entry.priSaleInfo.startTime <= block.timestamp, "IDOPlatform: This token IDO has not started!");
-        require(entry.priSaleInfo.endTime >= block.timestamp, "IDOPlatform: This token IDO already enterred public sale. No private sale");
+        require(entry.priSaleInfo.endTime >= block.timestamp, "IDOPlatform: This token IDO already entered public sale. No private sale");
         //if the amount of private is zero, revert the transaction
         require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
         require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");

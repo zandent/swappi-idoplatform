@@ -1,7 +1,7 @@
 const specs = {
   testNetFileName: 'contractAddressPublicTestnet.json',
   testNetUrl: 'http://evmtestnet.confluxrpc.com',
-  mainNetName: 'contractAddressPublicMainnet.json',
+  mainNetName: 'contractAddressMainnet.json',
   mainNetUrl: 'http://evm.confluxrpc.com',
   mainNetPrivateKey: '0x1234567890123456789012345678901234567890123456789012345678901234',
   privateKey: "0x2a77751e7a5b4f6e0e5357779cf46fff745c7a70f0806ccc61f499372d13facf",
@@ -12,7 +12,7 @@ const specs = {
 
   NFTAddr: "0x873069890624Fe89A40DD39287e26bD9339B0f67",
   idoplatformAddr: "0xbd990180bf0a276c981bd698fd1418d81ff28c61",
-  newTokenAddr: "0x78c3aa30862F5B992cA57eb3819e3711017Bd3f5",
+  newTokenAddr: "0x1CE83C8961d6b31B1CD6C7334b9Fe43b2263f775",
 
   amt: '10000000000000000000000000', // 10000000e18 // amount to sell in IDO * its decimals()
   ratioForLP: '20',
