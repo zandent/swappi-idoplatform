@@ -3,6 +3,10 @@ const specs = {
   testNetUrl: 'http://evmtestnet.confluxrpc.com',
   mainNetName: 'contractAddressMainnet.json',
   mainNetUrl: 'http://evm.confluxrpc.com',
+  //Testnet NFT address
+  NFTAddr: "0x873069890624Fe89A40DD39287e26bD9339B0f67",
+  // Mainnet NFT address
+  // NFTAddr: "0xbbdba5043a73e87533b9378e58dea577a872dc04",
   mainNetPrivateKey: '0x1234567890123456789012345678901234567890123456789012345678901234',
   privateKey: "0x2a77751e7a5b4f6e0e5357779cf46fff745c7a70f0806ccc61f499372d13facf",
   buyer1Key: "0x02d4cb4c0b97fb2ba107e704a4176a025ba885fea583a7677342b351aeca7b79",
@@ -10,7 +14,6 @@ const specs = {
   tokenOwnerKey: "0x03e8ab6a6405baa5ebd9cc185f2a1b65623c6ee3e734716ba01021f08f0ba4b2",
   buyer0Key: "0x82e2bb8a09fdc87bc73329936433370b3b7edd79aa898bbbe7a6d0592f1cb12c",
 
-  NFTAddr: "0x873069890624Fe89A40DD39287e26bD9339B0f67",
   idoplatformAddr: "0xbd990180bf0a276c981bd698fd1418d81ff28c61",
   newTokenAddr: "0x1CE83C8961d6b31B1CD6C7334b9Fe43b2263f775",
 
