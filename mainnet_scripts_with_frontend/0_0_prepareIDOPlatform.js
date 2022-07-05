@@ -1,7 +1,7 @@
 const config = require('../script-config.js');
 const specs = config.specs;
 let NFTAddr = specs.mainnetNFTAddr;
-let addresses = require('./'+specs.mainNetFileName);
+let addresses = require('../scripts/'+specs.mainNetFileName);
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
