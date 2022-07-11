@@ -20,7 +20,7 @@ let privateSpecs = specs.privateSpecs;
 let publicSpecs = specs.publicSpecs;
 
 async function main() {
-  const [admin, buyer1, buyer2, tokenOwner, buyer0] = await ethers.getSigners();
+  const [admin, buyer1, buyer2, tokenOwner, buyer0, buyer3, buyer4] = await ethers.getSigners();
   let PPITokenContract = new ethers.Contract(addresses.PPI, PPIToken.abi, buyer1);
   let veTokenContract = new ethers.Contract(addresses.VotingEscrow, VotingEscrow.abi, buyer1);
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
@@ -29,15 +29,22 @@ async function main() {
   await idoplatformContract.connect(buyer2).claimAllTokens(newTokenContract.address, currentIDOID, {gasLimit: specs.TenMillionGasLimit,});
   await idoplatformContract.connect(buyer1).claimAllTokens(newTokenContract.address, currentIDOID, {gasLimit: specs.TenMillionGasLimit,});
   await idoplatformContract.connect(buyer0).claimAllTokens(newTokenContract.address, currentIDOID, {gasLimit: specs.TenMillionGasLimit,});
+  await idoplatformContract.connect(buyer3).claimAllTokens(newTokenContract.address, currentIDOID, {gasLimit: specs.TenMillionGasLimit,});
+  await idoplatformContract.connect(buyer4).claimAllTokens(newTokenContract.address, currentIDOID, {gasLimit: specs.TenMillionGasLimit,});
   //balance Check
+  console.log("wait 15 sec to confirm transaction");
   await config.delay(15000);
   console.log("Token owner owns:", (await newTokenContract.balanceOf(tokenOwner.address)).toString());
   console.log("buyer0 owner owns:", (await newTokenContract.balanceOf(buyer0.address)).toString());
   console.log("buyer1 owner owns:", (await newTokenContract.balanceOf(buyer1.address)).toString());
   console.log("buyer2 owner owns:", (await newTokenContract.balanceOf(buyer2.address)).toString());
+  console.log("buyer3 owner owns:", (await newTokenContract.balanceOf(buyer3.address)).toString());
+  console.log("buyer4 owner owns:", (await newTokenContract.balanceOf(buyer4.address)).toString());
   console.log("buyer0 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer0.address)).toString());
   console.log("buyer1 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer1.address)).toString());
   console.log("buyer2 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer2.address)).toString());
+  console.log("buyer3 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer3.address)).toString());
+  console.log("buyer4 owner commits CFX:", (await idoplatformContract.getAmtOfCFXForBuyer(newTokenContract.address, currentIDOID, buyer4.address)).toString());
   
 
 }

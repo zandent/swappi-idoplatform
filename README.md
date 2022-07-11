@@ -42,6 +42,9 @@ struct privateSpecs {
     uint256 startTime;        // start time
     uint256 endTime;          // end time
     uint256 totalAmt;         // pre-defined total amout for private sale
+    uint256 NFTThreshold;     //NFT score
+    uint256 maxAmtPerBuyer;   //max limit for regular user
+    uint256 amountExcludingWhitelist; //remaining amount excluding whitelist
 }
 ```
 ```solidity
@@ -64,6 +67,9 @@ struct IDOToken {
     privateSpecs priSaleInfo; // privateSpecs
     publicSpecs pubSaleInfo; // publicSpecs
     mapping(address => uint256) buyers; // record the amount of token for each user to buy
+    mapping(address => uint256) amtOfCFXPerBuyer; // record the cfx of token buyer buys
+    mapping(address => uint256) whitelist; // record the max amount of whitelist addresses
+    uint256 totalMaxAmountOfWhitelist; //total max amount for all addresses in whitelist
 }
 ```
 ```solidity
@@ -97,6 +103,8 @@ function adminApproval(
                                        // E.g., if amt is 100 and ratio is 20, 
                                        // token owner should transfer 20 more tokens in next step
         uint256 priceForLP,            // Pre-defined amount of cfx for placing LP
+        address[] memory whitelistAddress, // whitelist in private sale
+        uint256[] memory maxAmtPerEntryInWhitelist, // Pre-defined max limit for each address in whitelist
         uint256[5] memory privateData, // Score, amount, price, start time, end time
         uint256[2] memory publicData   // price, end time
     ) external onlyOwner;

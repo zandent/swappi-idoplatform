@@ -8,7 +8,7 @@ async function main() {
     console.log("Account balance before:", (await deployer.getBalance()).toString());
     //Deploy idoplatform
     const factory  = await ethers.getContractFactory("idoplatform");
-    idoplatformContract = await factory.deploy(addresses.PPI, NFTAddr, addresses.SwappiRouter, addresses.SwappiFactory, addresses.WCFX, addresses.VotingEscrow);
+    idoplatformContract = await factory.deploy(addresses.PPI, NFTAddr, addresses.SwappiRouter, addresses.SwappiFactory, addresses.VotingEscrow);
     await idoplatformContract.deployed();
     console.log("Contract address:", idoplatformContract.address);
     console.log("Account balance after:", (await deployer.getBalance()).toString());

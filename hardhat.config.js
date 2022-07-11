@@ -13,7 +13,9 @@ module.exports = {
         config.specs.buyer1Key,
         config.specs.buyer2Key,
         config.specs.tokenOwnerKey,
-        config.specs.buyer0Key
+        config.specs.buyer0Key,
+        config.specs.buyer3Key,
+        config.specs.buyer4Key
       ]
     },
     mainnet: {
@@ -22,6 +24,9 @@ module.exports = {
         config.specs.mainNetPrivateKey,
         config.specs.mainNetTokenOwnerKey
       ]
+    },
+    hardhat: {
+      allowUnlimitedContractSize: true
     }
   }
 };

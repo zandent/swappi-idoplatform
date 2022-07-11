@@ -8,8 +8,6 @@ import "@swappi-libs/swappi-core/contracts/interfaces/ISwappiFactory.sol";
 import "../interfaces/IVotingEscrow.sol";
 // import "hardhat/console.sol";
 contract idoplatform is Ownable{
-    //WCFX address
-    address wcfx;
     // PPI token address
     IERC20 token; 
     //swappi nft token address
@@ -29,11 +27,15 @@ contract idoplatform is Ownable{
         uint256 startTime;
         uint256 endTime;
         uint256 totalAmt;
+        uint256 NFTThreshold;
+        uint256 maxAmtPerBuyer;
+        uint256 amountExcludingWhitelist;
     }
     /// @notice specs for public sale
     struct publicSpecs {
         uint256 price;
         uint256 endTime;
+        // uint256 maxAmtPerBuyer;
     }
     /// @notice wrapped token called IDO token
     struct IDOToken {
@@ -42,7 +44,7 @@ contract idoplatform is Ownable{
         address tokenOwner;
         string projectName;
         uint256 totalAmt;
-        uint256 amt; // amount to sell
+        uint256 amt; // amount to remain
         uint256 amtForLP; //pre_defined amount for place LP
         uint256 priceForLP; //pre_defined amount of cfx for place LP
         uint256 amtOfCFXCollected; 
@@ -50,6 +52,8 @@ contract idoplatform is Ownable{
         publicSpecs pubSaleInfo; // price, end time
         mapping(address => uint256) buyers; // record the amount of token buyer buys
         mapping(address => uint256) amtOfCFXPerBuyer; // record the cfx of token buyer buys
+        mapping(address => uint256) whitelist; // record the max amount of whitelist addresses
+        uint256 totalMaxAmountOfWhitelist;
     }
     /// @notice Mapping from token address to current IDO id.
     mapping(address => uint256) public currentIDOId;
@@ -60,14 +64,12 @@ contract idoplatform is Ownable{
             address _swappiNFT,
             address _router,
             address _swappiFactory,
-            address _wcfx,
             address _votingEscrow
         ) {
             token            = IERC20(_token);
             swappiNFT        = IERC721(_swappiNFT);
             router           = _router;
             swappiFactory    = ISwappiFactory(_swappiFactory);
-            wcfx             = _wcfx;
             votingEscrow     = IVotingEscrow(_votingEscrow);
         }
     function getCurrentIDOIdByTokenAddr(address token_addr) external view returns (uint256) {
@@ -85,6 +87,15 @@ contract idoplatform is Ownable{
     function getAmtOfCFXForBuyer(address token_addr, uint256 id, address buyer_addr) external view returns (uint256) {
         return tokenInfo[token_addr][id].amtOfCFXPerBuyer[buyer_addr];
     }
+    function isInWhitelist(address token_addr, uint256 id, address buyer_addr) external view returns (bool) {
+        return tokenInfo[token_addr][id].whitelist[buyer_addr] != 0;
+    }
+    function maxAmountInPrivateSaleByAddr(address token_addr, uint256 id, address buyer_addr) external view returns (uint256) {
+        if (tokenInfo[token_addr][id].whitelist[buyer_addr] != 0){
+            return tokenInfo[token_addr][id].whitelist[buyer_addr];
+        }
+        return tokenInfo[token_addr][id].priSaleInfo.maxAmtPerBuyer;
+    }
     // Step 1: admin should approval one token's new IDO
     function adminApproval(
         address token_addr,
@@ -92,7 +103,9 @@ contract idoplatform is Ownable{
         uint256 amt,
         uint256 ratioForLP,
         uint256 priceForLP,
-        uint256[5] memory privateData, //veToken_threshold, amount, price, start time, end time
+        address[] memory whitelistAddress,
+        uint256[] memory maxAmtPerEntryInWhitelist,
+        uint256[7] memory privateData, //veToken_threshold, amount, price, start time, end time, NFT score, max amount per buyer
         uint256[2] memory publicData // price, end time
         ) external onlyOwner {
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]+1];
@@ -100,7 +113,17 @@ contract idoplatform is Ownable{
         require(entry.valid == false, "IDOPlatform: This token IDO is already active");
         require(entry.isApproved == false, "IDOPlatform: This token IDO is already approved");
         require(amt >= privateData[1], "IDOPlatform: private sale amount should not exceed total amount!");
-        require(privateData[3] >= block.timestamp && privateData[3] < privateData[4] && privateData[4] < publicData[1], "timestamp setting is wrong");
+        require(privateData[3] >= block.timestamp && privateData[3] < privateData[4] && privateData[4] < publicData[1], "IDOPlatform: timestamp setting is wrong");
+        require(whitelistAddress.length == maxAmtPerEntryInWhitelist.length, "IDOPlatform: whitelist address length does not match its max amount limit lengeth");
+        uint256 numOfMemebers = whitelistAddress.length;
+        uint256 totalAmountOfWhilelist = 0;
+        for (uint i = 0; i < numOfMemebers; i += 1) {
+            totalAmountOfWhilelist += maxAmtPerEntryInWhitelist[i];
+        }
+        require(privateData[1] >= totalAmountOfWhilelist, "IDOPlatform: total amount of whilelist should not exceed private sale amount!");
+        for (uint i = 0; i < numOfMemebers; i += 1) {
+            entry.whitelist[whitelistAddress[i]] = maxAmtPerEntryInWhitelist[i];
+        }
         entry.isApproved                     = true;
         entry.valid                          = false;
         entry.projectName                    = projectName;
@@ -116,9 +139,13 @@ contract idoplatform is Ownable{
                                                               privateData[2], 
                                                               privateData[3],
                                                               privateData[4],
-                                                              privateData[1]);
+                                                              privateData[1],
+                                                              privateData[5],
+                                                              privateData[6],
+                                                              privateData[1] - totalAmountOfWhilelist);
         entry.pubSaleInfo                    = publicSpecs(  publicData[0], 
                                                               publicData[1]);
+        entry.totalMaxAmountOfWhitelist = totalAmountOfWhilelist;
         currentIDOId[token_addr]           = currentIDOId[token_addr] + 1;
     }
     // Step 2: let the token owner transfer tokens to "this" and start its sale
@@ -141,25 +168,78 @@ contract idoplatform is Ownable{
         require(entry.valid == true, "IDOPlatform: This token IDO has not started yet or expired");
         require(entry.priSaleInfo.startTime <= block.timestamp, "IDOPlatform: This token IDO has not started!");
         require(entry.priSaleInfo.endTime >= block.timestamp, "IDOPlatform: This token IDO already entered public sale. No private sale");
-        //if the amount of private is zero, revert the transaction
+        // if the amount of private is zero, revert the transaction
         require(entry.priSaleInfo.amount > 0, "IDOPlatform: This token IDO already enterred public sale. Amount for private sale is zero");
-        require (amt_to_buy <= entry.priSaleInfo.amount, "IDOPlatform: Not enough token to trade");
         require (msg.value * (10 ** IERC20(token_addr).decimals()) >= amt_to_buy * entry.priSaleInfo.price, "IDOPlatform: Not enough CFX to buy");
-        if (swappiNFT.balanceOf(msg.sender) != 0) { //Check user has NFT or not.
-            entry.amt = entry.amt - amt_to_buy;
-            entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
-            entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+        // if under whitelist
+        if (entry.whitelist[msg.sender] > 0) {
+            uint256 veTokenAmt = votingEscrow.balanceOf(msg.sender);
+            // if pass vePPI/NFT
+            if ((swappiNFT.balanceOf(msg.sender) != 0 && veTokenAmt >= entry.priSaleInfo.NFTThreshold)||veTokenAmt >= entry.priSaleInfo.veTokenThreshold) {
+                // if whitelist limit is over regular amount limit
+                if (entry.whitelist[msg.sender] >= entry.priSaleInfo.maxAmtPerBuyer) {
+                    require ((amt_to_buy + entry.buyers[msg.sender]) <= entry.whitelist[msg.sender], "IDOPlatform: Reach max amount to buy");
+                    entry.amt = entry.amt - amt_to_buy;
+                    entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                    entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                    entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                    entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+                }else{ // if whitelist limit is less than regular amount limit
+                    require ((amt_to_buy + entry.buyers[msg.sender]) <= entry.priSaleInfo.maxAmtPerBuyer, "IDOPlatform: Reach max amount to buy");
+                    // if after the sale, it will be over whitelist limit
+                    if ((amt_to_buy + entry.buyers[msg.sender]) > entry.whitelist[msg.sender]) {
+                        require (((amt_to_buy + entry.buyers[msg.sender]) - entry.whitelist[msg.sender]) <= entry.priSaleInfo.amountExcludingWhitelist, "IDOPlatform: Reach max amount to buy");
+                        // it amt_to_buy will take both whitelist limit and regular amount limit
+                        if (entry.buyers[msg.sender] < entry.whitelist[msg.sender]) {
+                            entry.priSaleInfo.amountExcludingWhitelist = entry.priSaleInfo.amountExcludingWhitelist - ((amt_to_buy + entry.buyers[msg.sender]) - entry.whitelist[msg.sender]);
+                        }else{
+                            entry.priSaleInfo.amountExcludingWhitelist = entry.priSaleInfo.amountExcludingWhitelist - amt_to_buy;
+                        }
+                        entry.amt = entry.amt - amt_to_buy;
+                        entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                        entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                        entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                        entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+                    }else{
+                        // if after the sale, it will be still less than whitelist limit
+                        entry.amt = entry.amt - amt_to_buy;
+                        entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                        entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                        entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                        entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+                    }
+                }
+            }else{
+                // if not pass vePPI/NFT but in whitelist
+                require ((amt_to_buy + entry.buyers[msg.sender]) <= entry.whitelist[msg.sender], "IDOPlatform: Reach max amount to buy");
+                entry.amt = entry.amt - amt_to_buy;
+                entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+            }
         }else{
+            // if not under whitelist
+            require ((amt_to_buy + entry.buyers[msg.sender]) <= entry.priSaleInfo.maxAmtPerBuyer, "IDOPlatform: Reach max amount to buy");
+            require (amt_to_buy <= entry.priSaleInfo.amountExcludingWhitelist, "IDOPlatform: Not enough token to trade");
             //calculate current veToken
             uint256 veTokenAmt = votingEscrow.balanceOf(msg.sender);
-            require (veTokenAmt >= entry.priSaleInfo.veTokenThreshold, "IDOPlatform: Your veToken cannot reach threshold");
-            entry.amt = entry.amt - amt_to_buy;
-            entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
-            entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
-            entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
-            entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+            if (swappiNFT.balanceOf(msg.sender) != 0 && veTokenAmt >= entry.priSaleInfo.NFTThreshold) { //Check user has NFT or not.
+                entry.amt = entry.amt - amt_to_buy;
+                entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                entry.priSaleInfo.amountExcludingWhitelist = entry.priSaleInfo.amountExcludingWhitelist - amt_to_buy;
+                entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+            }else{
+                require (veTokenAmt >= entry.priSaleInfo.veTokenThreshold, "IDOPlatform: Your veToken cannot reach threshold");
+                entry.amt = entry.amt - amt_to_buy;
+                entry.priSaleInfo.amount = entry.priSaleInfo.amount - amt_to_buy;
+                entry.buyers[msg.sender] = entry.buyers[msg.sender] + amt_to_buy;
+                entry.amtOfCFXPerBuyer[msg.sender] = entry.amtOfCFXPerBuyer[msg.sender] + msg.value;
+                entry.amtOfCFXCollected = entry.amtOfCFXCollected + msg.value;
+                entry.priSaleInfo.amountExcludingWhitelist = entry.priSaleInfo.amountExcludingWhitelist - amt_to_buy;
+            }
         }
     }
     // step 3.3: public sale

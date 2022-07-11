@@ -19,7 +19,7 @@ let priceForLP = specs.priceForLP;
 let privateSpecs = specs.privateSpecs;
 let publicSpecs = specs.publicSpecs;
 async function main() {
-  const [admin, buyer1, buyer2, tokenOwner, buyer0] = await ethers.getSigners();
+  const [admin, buyer1, buyer2, tokenOwner, buyer0, buyer3, buyer4] = await ethers.getSigners();
   let PPITokenContract = new ethers.Contract(addresses.PPI, PPIToken.abi, buyer1);
   let veTokenContract = new ethers.Contract(addresses.VotingEscrow, VotingEscrow.abi, buyer1);
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
@@ -30,12 +30,14 @@ async function main() {
   //buyer1 buy
   await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, specs.buyer1FirstPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer1FirstPurchase[1]});
   await idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, specs.buyer1SecondPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer1SecondPurchase[1]});
-  // //buyer1 buy too much token
-  // await expect(idoplatformContract.connect(buyer1).privateSale(newTokenContract.address, 10000000, {gasLimit: specs.OneMillionGasLimit, value: 0})).to.be.revertedWith('Not enough token to trade');
-  // //buyer2 buy in private sale
-  // await expect(idoplatformContract.connect(buyer2).privateSale(newTokenContract.address, 1, {gasLimit: specs.OneMillionGasLimit, value: 2})).to.be.revertedWith('Your veToken cannot reach threshold');
+
+  await idoplatformContract.connect(buyer3).privateSale(newTokenContract.address, specs.buyer3FirstPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer3FirstPurchase[1]});
+  await idoplatformContract.connect(buyer3).privateSale(newTokenContract.address, specs.buyer3SecondPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer3SecondPurchase[1]});
+
+  await idoplatformContract.connect(buyer4).privateSale(newTokenContract.address, specs.buyer4FirstPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer4FirstPurchase[1]});
+  await idoplatformContract.connect(buyer4).privateSale(newTokenContract.address, specs.buyer4SecondPurchase[0], {gasLimit: specs.OneMillionGasLimit, value: specs.buyer4SecondPurchase[1]});
   //balance Check
-  await config.delay(10000);
+  await config.delay(15000);
   let currentIDOID = await idoplatformContract.getCurrentIDOIdByTokenAddr(newTokenContract.address);
   console.log("Total CFX collected:", (await idoplatformContract.getAmtOfCFXCollected(newTokenContract.address, currentIDOID)).toString());
 

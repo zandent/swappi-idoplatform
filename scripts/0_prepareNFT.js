@@ -4,7 +4,7 @@ let addresses = require('./'+specs.testNetFileName);
 let PPIToken       = specs.PPIToken     ;
 let SwappiNFT      = specs.SwappiNFT    ;
 async function main() {
-    const [admin, buyer1, buyer2, tokenOwner, buyer0] = await ethers.getSigners();
+    const [admin, buyer1, buyer2, tokenOwner, buyer0, buyer3, buyer4] = await ethers.getSigners();
   
     console.log("Deploying contracts with the account:", admin.address);
   
@@ -19,10 +19,13 @@ async function main() {
     await swappiNFTContract.enableMint();
     await PPITokenContract.connect(buyer0).approve(swappiNFTContract.address, 200, {gasLimit: 1000000,});
     await swappiNFTContract.connect(buyer0).mint({gasLimit: 1000000,});
+    await PPITokenContract.connect(buyer4).approve(swappiNFTContract.address, 200, {gasLimit: 1000000,});
+    await swappiNFTContract.connect(buyer4).mint({gasLimit: 1000000,});
     console.log("swappiNFT Contract address:", swappiNFTContract.address);
     console.log("wait 10 sec to confirm transaction");
     await config.delay(10000);
     console.log("Address:", buyer0.address, " has balance of new token:", (await swappiNFTContract.balanceOf(buyer0.address)).toString());
+    console.log("Address:", buyer4.address, " has balance of new token:", (await swappiNFTContract.balanceOf(buyer4.address)).toString());
   }
   
   main()

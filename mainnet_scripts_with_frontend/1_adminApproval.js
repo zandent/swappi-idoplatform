@@ -17,6 +17,8 @@ let totalAmt = specs.totalAmt;
 let priceForLP = specs.priceForLP;
 let privateSpecs = specs.privateSpecs;
 let publicSpecs = specs.publicSpecs;
+let whitelist = specs.whitelist;
+let maxAmountInWhitelist = specs.maxAmountInWhitelist;
 async function main() {
   const [admin, tokenOwner] = await ethers.getSigners();
   let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
@@ -24,7 +26,7 @@ async function main() {
 
   console.log(`Private sale start: ${new Date(privateSpecs[3]*1000)} \n public sale start: ${new Date(privateSpecs[4]*1000)} \n All end at: ${new Date(publicSpecs[1]*1000)}`);
   
-  await idoplatformContract.adminApproval(newTokenContract.address, specs.tokenProjectName, amt, ratioForLP, priceForLP, privateSpecs, publicSpecs, {gasLimit: specs.OneMillionGasLimit,});
+  await idoplatformContract.adminApproval(newTokenContract.address, specs.tokenProjectName, amt, ratioForLP, priceForLP, whitelist, maxAmountInWhitelist, privateSpecs, publicSpecs, {gasLimit: specs.OneMillionGasLimit,});
 }
 
 main()
