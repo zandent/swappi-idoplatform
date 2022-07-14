@@ -151,8 +151,10 @@ contract idoplatform is Ownable{
     // Step 2: let the token owner transfer tokens to "this" and start its sale
     // TODO: need step 2 or not
     function addIDOToken(
-        address token_addr
+        address token_addr,
+        uint256 ido_id
         ) external {
+            require(ido_id == currentIDOId[token_addr], "IDOPlatform: IDO ID does not match the lastest one. Contact admin to check issue.");
             IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
             require(entry.isApproved == true, "IDOPlatform: Contact admin to approval your IDO");
             require(entry.valid == false, "IDOPlatform: Your IDO already started");

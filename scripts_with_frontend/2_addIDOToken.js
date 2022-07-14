@@ -11,6 +11,7 @@ let NFTAddr = specs.NFTAddr;
 let idoplatformJSON = specs.idoplatformJSON;
 let idoplatformAddr = specs.idoplatformAddr;
 let newTokenAddr = specs.newTokenAddr;
+let newTokenIDOID = specs.newTokenIDOID;
 let amt = specs.amt;
 let ratioForLP = specs.ratioForLP;
 let amtIncludingLP = (BigNumber.from(amt).mul(100+ratioForLP).div(100)).toHexString();// amt * (1+ratioForLP%)
@@ -26,7 +27,7 @@ async function main() {
   let idoplatformContract = new ethers.Contract(idoplatformAddr, idoplatformJSON.abi, admin);
 
   await newTokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: specs.OneMillionGasLimit,});
-  await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, {gasLimit: specs.OneMillionGasLimit,});
+  await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, newTokenIDOID, {gasLimit: specs.OneMillionGasLimit,});
   
   // console.log("Address:", buyer1.address, " has balance of vetoken:", (await veTokenContract.balanceOf(buyer1.address)).toString());
   // console.log("Address:", buyer2.address, " has balance of vetoken:", (await veTokenContract.balanceOf(buyer2.address)).toString());

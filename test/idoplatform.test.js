@@ -39,6 +39,7 @@ describe("idoplatform Smart Contract Tests", function () {
     let maxAmtPerEntryInWhitelist = ['150000000000000000000000', '1000000000000000000000']; // 150,000 + 1,000 = 151,000
     // publicspecs    [price]
     let publicSpecs = [3];
+    let newTokenIDOID = 1;
     this.beforeEach(async function() {
         [adminAddr, tokenOwner, buyer0, buyer1, buyer2, buyer3, buyer4, veTokenContractDeployer] = await ethers.getSigners();
         // console.log(`Address ${adminAddr.address} created`);
@@ -151,7 +152,7 @@ describe("idoplatform Smart Contract Tests", function () {
         await expect(idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, {gasLimit: 1000000,})).to.be.reverted;
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(false);
         await tokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: 1000000,});
-        await idoplatformContract.connect(tokenOwner).addIDOToken(tokenContract.address, {gasLimit: 1000000,});
+        await idoplatformContract.connect(tokenOwner).addIDOToken(tokenContract.address, newTokenIDOID, {gasLimit: 1000000,});
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(true);
         console.log("================Now move to private sale================");
         //push to private sale time

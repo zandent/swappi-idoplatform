@@ -20,7 +20,7 @@ const specs = {
 
   idoplatformAddr: "0x258fdE8ae0872CcAE47C0ACfADB0e73E66daF6c6",
   newTokenAddr: "0x34F695EAA2098284999027304249bc64bbb32138",
-
+  newTokenIDOID: '1',
   totalAmt: '20000000000000000000000000', // 20000000e18 // Total supply for new token
   amt: '10000000000000000000000000', // 10000000e18 // amount to sell in IDO * its decimals()
   ratioForLP: '20',

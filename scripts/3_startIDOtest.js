@@ -11,6 +11,7 @@ let NFTAddr = specs.NFTAddr;
 let idoplatformJSON = specs.idoplatformJSON;
 let idoplatformAddr = specs.idoplatformAddr;
 let newTokenAddr = specs.newTokenAddr;
+let newTokenIDOID = specs.newTokenIDOID;
 let amt = specs.amt;
 let ratioForLP = specs.ratioForLP;
 let amtIncludingLP = (BigNumber.from(amt).mul(100+ratioForLP).div(100)).toHexString();// amt * (1+ratioForLP%)
@@ -66,7 +67,7 @@ async function main() {
   await config.delay(10000);
   await newTokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: specs.OneMillionGasLimit,});
   console.log("Now token owner add IDO token...")
-  await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, {gasLimit: specs.OneMillionGasLimit,});
+  await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, newTokenIDOID, {gasLimit: specs.OneMillionGasLimit,});
   console.log("wait 10 sec to confirm transaction");
   await config.delay(10000);
 }
