@@ -154,6 +154,7 @@ describe("idoplatform Smart Contract Tests", function () {
         await tokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: 1000000,});
         await idoplatformContract.connect(tokenOwner).addIDOToken(tokenContract.address, newTokenIDOID, {gasLimit: 1000000,});
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(true);
+        await expect(idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, WL, maxAmtPerEntryInWhitelist, privateSpecs, publicSpecs)).to.be.revertedWith('IDOPlatform: This token IDO is already active.');;
         console.log("================Now move to private sale================");
         //push to private sale time
         await ethers.provider.send('evm_increaseTime', [1000]);

@@ -18,8 +18,8 @@ const specs = {
   buyer3Key: "0x312c32744fb9b72464e8f9f48dd24bac82053f1dfb49f4369a939afc2145208e",
   buyer4Key: "0x78437d1d5238f999d16725a006b800e48cdecf4de52c3060b7af46c08ce79c24",
 
-  idoplatformAddr: "0x4274C1A1781d36888993948859ba335d8f3d6694",
-  newTokenAddr: "0x8948D8A8A044d37bD58d04b623CF24Dd51F13B4e",
+  idoplatformAddr: "0xEDE132C78dD6C88Bbc017ba2EC7a0A390a957065",
+  newTokenAddr: "0xDC47025B39aDfd45f672c776439281E945A69653",
   newTokenIDOID: '1',
   totalAmt: '20000000000000000000000000', // 20000000e18 // Total supply for new token
   amt: '10000000000000000000000000', // 10000000e18 // amount to sell in IDO * its decimals()

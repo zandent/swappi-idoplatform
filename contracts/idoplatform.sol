@@ -108,6 +108,9 @@ contract idoplatform is Ownable{
         uint256[7] memory privateData, //veToken_threshold, amount, price, start time, end time, NFT score, max amount per buyer
         uint256[2] memory publicData // price, end time
         ) external onlyOwner {
+        if (currentIDOId[token_addr] != 0) {
+            require(tokenInfo[token_addr][currentIDOId[token_addr]].valid == false, "IDOPlatform: This token IDO is already active.");
+        }
         IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]+1];
         // require(entry.currentIDOId == false, "This token IDO is already active");
         require(entry.valid == false, "IDOPlatform: This token IDO is already active");
