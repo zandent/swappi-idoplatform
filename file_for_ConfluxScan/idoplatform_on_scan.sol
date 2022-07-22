@@ -1035,7 +1035,7 @@ contract idoplatform is Ownable{
     function finalize(address token_addr, uint256 IDOId) public returns (bool){
         IDOToken storage entry = tokenInfo[token_addr][IDOId];
         if (entry.valid && entry.isApproved) {
-            if (entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0) {
+            if (entry.pubSaleInfo.endTime < block.timestamp) {
                 //Now it is ending
                 entry.valid = false;
                 entry.isApproved = false;
@@ -1064,7 +1064,7 @@ contract idoplatform is Ownable{
     function claimAllTokens(address token_addr, uint256 IDOId) external {
         finalize(token_addr, IDOId);
         IDOToken storage entry = tokenInfo[token_addr][IDOId];
-        require(entry.pubSaleInfo.endTime < block.timestamp || entry.amt  == 0, "IDOPlatform: IDO is still active");
+        require(entry.pubSaleInfo.endTime < block.timestamp, "IDOPlatform: IDO is still active");
         require(entry.buyers[msg.sender] > 0, "IDOPlatform: Your amount of this token is zero");
         SafeERC20.safeTransfer(IERC20(token_addr), msg.sender, entry.buyers[msg.sender]);
         entry.buyers[msg.sender] = 0;
