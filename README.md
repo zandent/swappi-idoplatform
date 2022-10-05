@@ -20,7 +20,8 @@
 
 - Token owner first approves idoplatform with the required amount of new ERC-20 token and sends the same amount of token to idoplatform. Meanwhile, token owner starts IDO and move it into upcoming status.
 
-    `npx hardhat run --network testnet scripts_with_frontend/2_addIDOToken.js`
+    `npx hardhat run --network testnet scripts_with_frontend/1_1_addIDOToken.js`
+    `npx hardhat run --network testnet scripts_with_frontend/1_2_adminAddWL.js`
 
 - (Should be done if no users join and claim) Anyone can finalize to create LP and return remaining currencies back to token owner.
 
@@ -103,10 +104,14 @@ function adminApproval(
                                        // E.g., if amt is 100 and ratio is 20, 
                                        // token owner should transfer 20 more tokens in next step
         uint256 priceForLP,            // Pre-defined amount of cfx for placing LP
-        address[] memory whitelistAddress, // whitelist in private sale
-        uint256[] memory maxAmtPerEntryInWhitelist, // Pre-defined max limit for each address in whitelist
+        uint256 numOfWhitelistMembers, // Length of whitelist in private sale
         uint256[5] memory privateData, // Score, amount, price, start time, end time
         uint256[2] memory publicData   // price, end time
+    ) external onlyOwner;
+function adminAddWhitelist(
+        address token_addr,
+        address[] memory whitelistAddress, //The length cannot exceed around 200 accounts in genernal
+        uint256[] memory maxAmtPerEntryInWhitelist
     ) external onlyOwner;
 ```
 2. Token owner transfer required amounts of token into the contract, which indicated to be ready to start IDO:
