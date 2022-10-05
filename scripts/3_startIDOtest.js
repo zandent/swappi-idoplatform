@@ -62,14 +62,23 @@ async function main() {
   console.log(`Private sale start: ${new Date(privateSpecs[3]*1000)} \n public sale start: ${new Date(privateSpecs[4]*1000)} \n All end at: ${new Date(publicSpecs[1]*1000)}`);
   
   console.log("Now admin approve...");
-  await idoplatformContract.adminApproval(newTokenContract.address, specs.tokenProjectName, amt, ratioForLP, priceForLP, whitelist, maxAmountInWhitelist, privateSpecs, publicSpecs, {gasLimit: specs.OneMillionGasLimit,});
-  console.log("wait 10 sec to confirm transaction");
-  await config.delay(10000);
-  await newTokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: specs.OneMillionGasLimit,});
+  let tx = await idoplatformContract.adminApproval(newTokenContract.address, specs.tokenProjectName, amt, ratioForLP, priceForLP, whitelist.length, privateSpecs, publicSpecs, {gasLimit: specs.OneMillionGasLimit,});
+  await tx.wait();
+  console.log(">> ✅ Done for adminApproval");
+  if (whitelist.length != 0) {
+    for (let i = 0; i < parseInt((whitelist.length+100)/100); i++) {
+      tx = await idoplatformContract.adminAddWhitelist(newTokenContract.address, whitelist.slice(i*100, Math.min(i*100 + 100, whitelist.length)), maxAmountInWhitelist.slice(i*100, Math.min(i*100 + 100, whitelist.length)), {gasLimit: specs.OneMillionGasLimit,});
+      await tx.wait();
+      console.log(`>> ✅ Done for adminAddWhitelist from index ${i*100} to ${Math.min(i*100 + 100, whitelist.length)}`);
+    }
+  }
+  tx = await newTokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: specs.OneMillionGasLimit,});
+  await tx.wait();
+  console.log(">> ✅ Done for approve");
   console.log("Now token owner add IDO token...")
-  await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, newTokenIDOID, {gasLimit: specs.OneMillionGasLimit,});
-  console.log("wait 10 sec to confirm transaction");
-  await config.delay(10000);
+  tx = await idoplatformContract.connect(tokenOwner).addIDOToken(newTokenContract.address, newTokenIDOID, {gasLimit: specs.OneMillionGasLimit,});
+  await tx.wait();
+  console.log(">> ✅ Done for addIDOToken");
 }
 
 main()

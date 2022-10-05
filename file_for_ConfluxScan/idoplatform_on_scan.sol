@@ -1,4 +1,8 @@
-//SPDX-License-Identifier: Unlicense
+// Sources flattened with hardhat v2.9.9 https://hardhat.org
+
+// File interfaces/IERC20.sol
+
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
 /**
@@ -102,6 +106,10 @@ interface IERC20 {
         uint256 value
     );
 }
+
+
+// File libraries/Address.sol
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.3.2 (utils/Address.sol)
 
@@ -355,9 +363,14 @@ library Address {
         }
     }
 }
+
+
+// File libraries/SafeERC20.sol
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/utils/SafeERC20.sol)
 pragma solidity ^0.8.0;
+
 
 /**
  * @title SafeERC20
@@ -483,6 +496,10 @@ library SafeERC20 {
         }
     }
 }
+
+
+// File @openzeppelin/contracts/utils/Context.sol@v4.6.0
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
@@ -507,11 +524,14 @@ abstract contract Context {
         return msg.data;
     }
 }
+
+
+// File @openzeppelin/contracts/access/Ownable.sol@v4.6.0
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 
 pragma solidity ^0.8.0;
-
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -582,6 +602,10 @@ abstract contract Ownable is Context {
         emit OwnershipTransferred(oldOwner, newOwner);
     }
 }
+
+
+// File @openzeppelin/contracts/utils/introspection/IERC165.sol@v4.6.0
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)
 
@@ -607,6 +631,10 @@ interface IERC165 {
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
+
+
+// File @openzeppelin/contracts/token/ERC721/IERC721.sol@v4.6.0
+
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (token/ERC721/IERC721.sol)
 
@@ -748,6 +776,10 @@ interface IERC721 is IERC165 {
      */
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 }
+
+
+// File @swappi-libs/swappi-core/contracts/interfaces/ISwappiFactory.sol@v0.1.0
+
 pragma solidity >=0.5.0;
 
 interface ISwappiFactory {
@@ -767,15 +799,29 @@ interface ISwappiFactory {
     function setFeeTo(address) external;
     function setFeeToSetter(address) external;
 }
+
+
+// File interfaces/IVotingEscrow.sol
+
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.1;
 
 interface IVotingEscrow{
     function balanceOf(address _account) external view returns (uint256);
 }
-pragma solidity ^0.8.1;
-//SPDX-License-Identifier: Unlicense
 
+
+// File contracts/idoplatform.sol
+
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.1;
+
+
+
+
+
+
+// import "hardhat/console.sol";
 contract idoplatform is Ownable{
     // PPI token address
     IERC20 token; 
@@ -826,6 +872,8 @@ contract idoplatform is Ownable{
     }
     /// @notice Mapping from token address to current IDO id.
     mapping(address => uint256) public currentIDOId;
+    /// @notice Mapping from token address and ID to the remaining amount of whitelist members to be registered.
+    mapping(address => mapping(uint256 => uint256)) public remainingAmtOfWhitelistMembers;
     /// @notice Mapping from token address to its specs.
     mapping(address => mapping(uint256 => IDOToken)) public tokenInfo;
     constructor(
@@ -865,15 +913,14 @@ contract idoplatform is Ownable{
         }
         return tokenInfo[token_addr][id].priSaleInfo.maxAmtPerBuyer;
     }
-    // Step 1: admin should approval one token's new IDO
+    // Step 1.1: admin should approval one token's new IDO
     function adminApproval(
         address token_addr,
         string memory projectName,
         uint256 amt,
         uint256 ratioForLP,
         uint256 priceForLP,
-        address[] memory whitelistAddress,
-        uint256[] memory maxAmtPerEntryInWhitelist,
+        uint256 numOfWhitelistMembers,
         uint256[7] memory privateData, //veToken_threshold, amount, price, start time, end time, NFT score, max amount per buyer
         uint256[2] memory publicData // price, end time
         ) external onlyOwner {
@@ -886,21 +933,19 @@ contract idoplatform is Ownable{
         require(entry.isApproved == false, "IDOPlatform: This token IDO is already approved");
         require(amt >= privateData[1], "IDOPlatform: private sale amount should not exceed total amount!");
         require(privateData[3] >= block.timestamp && privateData[3] < privateData[4] && privateData[4] < publicData[1], "IDOPlatform: timestamp setting is wrong");
-        require(whitelistAddress.length == maxAmtPerEntryInWhitelist.length, "IDOPlatform: whitelist address length does not match its max amount limit lengeth");
-        uint256 numOfMemebers = whitelistAddress.length;
-        uint256 totalAmountOfWhilelist = 0;
-        for (uint i = 0; i < numOfMemebers; i += 1) {
-            totalAmountOfWhilelist += maxAmtPerEntryInWhitelist[i];
-        }
-        require(privateData[1] >= totalAmountOfWhilelist, "IDOPlatform: total amount of whilelist should not exceed private sale amount!");
-        for (uint i = 0; i < numOfMemebers; i += 1) {
-            entry.whitelist[whitelistAddress[i]] = maxAmtPerEntryInWhitelist[i];
-        }
+        // require(whitelistAddress.length == maxAmtPerEntryInWhitelist.length, "IDOPlatform: whitelist address length does not match its max amount limit lengeth");
+        // uint256 numOfMemebers = whitelistAddress.length;
+        // uint256 totalAmountOfWhilelist = 0;
+        // for (uint i = 0; i < numOfMemebers; i += 1) {
+        //     totalAmountOfWhilelist += maxAmtPerEntryInWhitelist[i];
+        // }
+        // require(privateData[1] >= totalAmountOfWhilelist, "IDOPlatform: total amount of whilelist should not exceed private sale amount!");
+        // for (uint i = 0; i < numOfMemebers; i += 1) {
+        //     entry.whitelist[whitelistAddress[i]] = maxAmtPerEntryInWhitelist[i];
+        // }
         entry.isApproved                     = true;
         entry.valid                          = false;
         entry.projectName                    = projectName;
-        // entry.symbol                         = IERC20(token_addr).symbol();
-        // entry.decimals                       = IERC20(token_addr).decimals();
         entry.totalAmt                       = amt;
         entry.amt                            = amt;
         entry.amtForLP                       = uint256(amt * ratioForLP) /100;
@@ -914,11 +959,36 @@ contract idoplatform is Ownable{
                                                               privateData[1],
                                                               privateData[5],
                                                               privateData[6],
-                                                              privateData[1] - totalAmountOfWhilelist);
+                                                              privateData[1] - 0);
         entry.pubSaleInfo                    = publicSpecs(  publicData[0], 
                                                               publicData[1]);
-        entry.totalMaxAmountOfWhitelist = totalAmountOfWhilelist;
+        entry.totalMaxAmountOfWhitelist = 0;
+        remainingAmtOfWhitelistMembers[token_addr][currentIDOId[token_addr]+1] = numOfWhitelistMembers;
         currentIDOId[token_addr]           = currentIDOId[token_addr] + 1;
+    }
+    // Step 1.2: register whitelist members. It can be invoked multiple times.
+    function adminAddWhitelist(
+        address token_addr,
+        address[] memory whitelistAddress, //The length cannot exceed around 200 accounts in genernal
+        uint256[] memory maxAmtPerEntryInWhitelist
+    ) external onlyOwner {
+        IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
+        require(entry.isApproved == true, "IDOPlatform: Contact admin to approval your IDO");
+        require(entry.valid == false, "IDOPlatform: Your IDO already started");
+        require(entry.priSaleInfo.startTime >= block.timestamp, "IDOPlatform: Adding whitelist is too late!");
+        require(whitelistAddress.length == maxAmtPerEntryInWhitelist.length, "IDOPlatform: whitelist address length does not match its max amount limit lengeth");
+        uint256 numOfMemebers = whitelistAddress.length;
+        uint256 totalAmountOfWhilelist = 0;
+        for (uint i = 0; i < numOfMemebers; i += 1) {
+            if (entry.whitelist[whitelistAddress[i]] == 0){
+                totalAmountOfWhilelist += maxAmtPerEntryInWhitelist[i];
+                remainingAmtOfWhitelistMembers[token_addr][currentIDOId[token_addr]] = remainingAmtOfWhitelistMembers[token_addr][currentIDOId[token_addr]] - 1;
+            }
+            entry.whitelist[whitelistAddress[i]] = maxAmtPerEntryInWhitelist[i];
+        }
+        require(entry.priSaleInfo.totalAmt >= entry.totalMaxAmountOfWhitelist + totalAmountOfWhilelist, "IDOPlatform: total amount of whilelist should not exceed private sale amount!");
+        entry.totalMaxAmountOfWhitelist = entry.totalMaxAmountOfWhitelist + totalAmountOfWhilelist;
+        entry.priSaleInfo.amountExcludingWhitelist = entry.priSaleInfo.amountExcludingWhitelist - totalAmountOfWhilelist;
     }
     // Step 2: let the token owner transfer tokens to "this" and start its sale
     // TODO: need step 2 or not
@@ -927,6 +997,7 @@ contract idoplatform is Ownable{
         uint256 ido_id
         ) external {
             require(ido_id == currentIDOId[token_addr], "IDOPlatform: IDO ID does not match the lastest one. Contact admin to check issue.");
+            require(remainingAmtOfWhitelistMembers[token_addr][currentIDOId[token_addr]] == 0, "IDOPlatform: There are still whitelist members who needs to be registered");
             IDOToken storage entry = tokenInfo[token_addr][currentIDOId[token_addr]];
             require(entry.isApproved == true, "IDOPlatform: Contact admin to approval your IDO");
             require(entry.valid == false, "IDOPlatform: Your IDO already started");

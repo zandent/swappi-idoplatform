@@ -147,14 +147,15 @@ describe("idoplatform Smart Contract Tests", function () {
         privateSpecs.push(timestampBefore + 1000, timestampBefore + 2000);
         privateSpecs.push(NFTThreshold, maxAmtPerBuyer);
         publicSpecs.push(timestampBefore + 3000);
-        await idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, WL, maxAmtPerEntryInWhitelist, privateSpecs, publicSpecs);
+        await idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, WL.length, privateSpecs, publicSpecs);
+        await idoplatformContract.adminAddWhitelist(tokenContract.address, WL, maxAmtPerEntryInWhitelist);
         expect(await idoplatformContract.getCurrentIDOIdByTokenAddr(tokenContract.address)).to.equal(1);
         await expect(idoplatformContract.connect(buyer0).claimAllTokens(tokenContract.address, {gasLimit: 1000000,})).to.be.reverted;
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(false);
         await tokenContract.connect(tokenOwner).approve(idoplatformContract.address, amtIncludingLP, {gasLimit: 1000000,});
         await idoplatformContract.connect(tokenOwner).addIDOToken(tokenContract.address, newTokenIDOID, {gasLimit: 1000000,});
         expect(await idoplatformContract.isIDOActiveByID(tokenContract.address, 1)).to.equal(true);
-        await expect(idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, WL, maxAmtPerEntryInWhitelist, privateSpecs, publicSpecs)).to.be.revertedWith('IDOPlatform: This token IDO is already active.');;
+        await expect(idoplatformContract.adminApproval(tokenContract.address, "BrandNewToken", amt, ratioForLP, priceForLP, WL.length, privateSpecs, publicSpecs)).to.be.revertedWith('IDOPlatform: This token IDO is already active.');;
         console.log("================Now move to private sale================");
         //push to private sale time
         await ethers.provider.send('evm_increaseTime', [1000]);
