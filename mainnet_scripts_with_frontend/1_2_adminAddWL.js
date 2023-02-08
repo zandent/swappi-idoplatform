@@ -22,11 +22,10 @@ let maxAmountInWhitelist = specs.maxAmountInWhitelist;
 const MAXNUMPEREACHCALL = 100;
 async function main() {
   const [admin, tokenOwner] = await ethers.getSigners();
-  let newTokenContract = new ethers.Contract(newTokenAddr, PPIToken.abi, tokenOwner);
   let idoplatformContract = new ethers.Contract(idoplatformAddr, idoplatformJSON.abi, admin);  
   if (whitelist.length != 0) {
     for (let i = 0; i < parseInt((whitelist.length+MAXNUMPEREACHCALL-1)/MAXNUMPEREACHCALL); i++) {
-      let tx = await idoplatformContract.adminAddWhitelist(newTokenContract.address, whitelist.slice(i*MAXNUMPEREACHCALL, Math.min(i*MAXNUMPEREACHCALL + MAXNUMPEREACHCALL, whitelist.length)), maxAmountInWhitelist.slice(i*MAXNUMPEREACHCALL, Math.min(i*MAXNUMPEREACHCALL + MAXNUMPEREACHCALL, whitelist.length)), {gasLimit: specs.TenMillionGasLimit,});
+      let tx = await idoplatformContract.adminAddWhitelist(newTokenAddr, whitelist.slice(i*MAXNUMPEREACHCALL, Math.min(i*MAXNUMPEREACHCALL + MAXNUMPEREACHCALL, whitelist.length)), maxAmountInWhitelist.slice(i*MAXNUMPEREACHCALL, Math.min(i*MAXNUMPEREACHCALL + MAXNUMPEREACHCALL, whitelist.length)), {gasLimit: specs.TenMillionGasLimit,});
       await tx.wait();
       console.log(`>> ✅ Done for adminAddWhitelist from index ${i*MAXNUMPEREACHCALL} to ${Math.min(i*MAXNUMPEREACHCALL + MAXNUMPEREACHCALL, whitelist.length)-1}`);
     }
